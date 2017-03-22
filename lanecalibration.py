@@ -10,7 +10,7 @@ class LaneCalibration(object):
 
         # Capture a frame from a video and save as img
         video_capture = cv2.VideoCapture(video_path)
-        video_capture.set(cv2.CAP_PROP_POS_MSEC,1000) # Choose 1 seconds into video
+        video_capture.set(cv2.CAP_PROP_POS_MSEC,1000) # Choose 1 second into video
         self.success, self.img = video_capture.read()
 
     def run(self):
@@ -21,8 +21,8 @@ class LaneCalibration(object):
             cv2.setMouseCallback('image', self.draw_circle)
 
             # Wait for four mouse clicks selecting the trapezoid shape
-            while(self.mclicks < 4):
-                cv2.putText(self.img, "Select four points or press 'Enter' to exit.", 
+            while(self.mclicks <= 4):
+                cv2.putText(self.img, "Select four points. Press 'Enter' to exit.", 
                                 (200,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0),2)
                 cv2.imshow('image', self.img)
 
@@ -32,18 +32,29 @@ class LaneCalibration(object):
                     break
 
             # Close image
+            cv2.waitKey()
             cv2.destroyAllWindows()
+
+            # Sort selected points in order from top left of image
+            # to bottom right
+            self.click_coords.sort(key = lambda row: (row[1],row[0]))
             return np.asarray(self.click_coords)
 
     def draw_circle(self,event,x,y,flags,param):
         # Called on double click event
         if event == cv2.EVENT_LBUTTONDBLCLK:
-            cv2.circle(self.img,(x,y),10,(255,0,0),-1)
-            mouseX,mouseY = x,y
             self.mclicks += 1
-            self.click_coords.append([mouseX,mouseY])
+            if self.mclicks <= 4:
+                cv2.circle(self.img,(x,y),7,(255,0,0),-1)
+                cv2.putText(self.img, "(%d,%d)" %(x,y), (x+6,y+6), 
+                             cv2.FONT_HERSHEY_SIMPLEX,0.7,(255,0,0),2)
+                mouseX,mouseY = x,y
+                self.click_coords.append([mouseX,mouseY])
 
 if __name__ == '__main__':
-    LaneCalibrator = LaneCalibration('./project_video.mp4')
-    points = LaneCalibrator.run()
+    LaneCalibration = LaneCalibration('./project_video.mp4')
+    points = LaneCalibration.run()
     print(points)
+
+
+
