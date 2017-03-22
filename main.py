@@ -49,9 +49,6 @@ def process_image(base):
     misc.imsave('output_images/undistorted.jpg', undistorted)
     # i = show_image(fig, i, undistorted, 'Undistorted', 'gray')
 
-    # make copy for simple lane detection
-    img2 = undistorted
-
     img = thresholder.threshold(undistorted)
     misc.imsave('output_images/thresholded.jpg', img)
     # i = show_image(fig, i, img, 'Thresholded', 'gray')
@@ -95,8 +92,11 @@ def process_image(base):
 
     # SIMPLE LANE DETECTION
 
+    misc.imsave('debug_images/base.jpg', base)
+
     # convert to hsv (image, cv2.COLOR_BGR2HSV)
-    hsv = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(base, cv2.COLOR_BGR2HSV)
+    misc.imsave('debug_images/hsv.jpg', hsv)
 
     # apply gaussian blur (image, (kernel_size, kernel_size), 0)
     kernel_size = 3
@@ -105,13 +105,13 @@ def process_image(base):
     # filter yellow and white
     yellow_min = np.array([65, 80, 80], np.uint8)
     yellow_max = np.array([105, 255, 255], np.uint8)
-    yellow_mask = cv2.inRange(img, yellow_min, yellow_max)
+    yellow_mask = cv2.inRange(g_blur, yellow_min, yellow_max)
 
     white_min = np.array([0, 0, 200], np.uint8)
     white_max = np.array([255, 80, 255], np.uint8)
-    white_mask = cv2.inRange(img, white_min, white_max)
+    white_mask = cv2.inRange(g_blur, white_min, white_max)
 
-    c_filter = cv2.bitwise_and(img, img, mask=cv2.bitwise_or(yellow_mask, white_mask))
+    c_filter = cv2.bitwise_and(g_blur, g_blur, mask=cv2.bitwise_or(yellow_mask, white_mask))
 
     # use canny edge detector to detect edges
     low_threshold = 30
