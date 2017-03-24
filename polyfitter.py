@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Polyfitter:
@@ -128,3 +129,8 @@ class Polyfitter:
         car_pos = ((img.shape[1] / 2) - ((lane_leftx + lane_rightx) / 2)) * xm_per_pix
 
         return (left_curverad + right_curverad) / 2, car_pos.round(2)
+
+    def plot_histogram(self, img):
+        histogram = np.sum(img[int(img.shape[0] / 2):, :], axis=0)
+        plt.plot(histogram)
+        plt.savefig('output_images/histogram.jpg', bbox_inches='tight', pad_inches=0)

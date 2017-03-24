@@ -2,6 +2,7 @@ import cv2
 from matplotlib import pyplot as plt
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
+import numpy as np
 
 from polydrawer import Polydrawer
 from polyfitter import Polyfitter
@@ -15,13 +16,14 @@ warper = Warper()
 polyfitter = Polyfitter()
 polydrawer = Polydrawer()
 
-
 def main():
     # video = 'harder_challenge_video'
     # video = 'challenge_video'
-    video = 'project_video'
+    #video = 'project_video'
+    video = 'UM'
     white_output = '{}_done_2.mp4'.format(video)
-    clip1 = VideoFileClip('{}.mp4'.format(video)).subclip(30, 51)
+    # clip1 = VideoFileClip('{}.mp4'.format(video)).subclip(20, 20.025)
+    clip1 = VideoFileClip('{}.mp4'.format(video)).subclip(0, 0.025)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 
@@ -38,9 +40,17 @@ def process_image(base):
     misc.imsave('output_images/thresholded.jpg', img)
     # i = show_image(fig, i, img, 'Thresholded', 'gray')
 
+    before_warp_img = warper.before_warp(img)
+    misc.imsave('output_images/before_warp.jpg', before_warp_img)
+
     img = warper.warp(img)
     misc.imsave('output_images/warped.jpg', img)
     # i = show_image(fig, i, img, 'Warped', 'gray')
+
+    after_warp_img = warper.after_warp(img)
+    misc.imsave('output_images/after_warp.jpg', after_warp_img)
+
+    polyfitter.plot_histogram(img)
 
     left_fit, right_fit = polyfitter.polyfit(img)
 
