@@ -2,13 +2,12 @@ import cv2
 from matplotlib import pyplot as plt
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
-import numpy as np
 
-from polydrawer import Polydrawer
-from polyfitter import Polyfitter
-from thresholder import Thresholder
-from undistorter import Undistorter
-from warper import Warper
+from src.polydrawer import Polydrawer
+from src.polyfitter import Polyfitter
+from src.thresholder import Thresholder
+from src.undistorter import Undistorter
+from src.warper import Warper
 
 undistorter = Undistorter()
 thresholder = Thresholder()
