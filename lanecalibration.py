@@ -20,36 +20,57 @@ class LaneCalibration(object):
             cv2.namedWindow('image')
             cv2.setMouseCallback('image', self.draw_circle)
 
-            # Wait for four mouse clicks selecting the trapezoid shape
-            while(self.mclicks <= 4):
-                cv2.putText(self.img, "Select four points. Press 'Enter' to exit.", 
-                                (200,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0),2)
-                cv2.imshow('image', self.img)
+            # Wait for four mouse clicks 
+            while(self.mclicks < 4):
+                # Display image
+                self.display_image()
 
-                # Exit if 'Enter' pressed
-                key = cv2.waitKey(20) & 0xFF
-                if key == 13:
-                    break
+                # Update every 20ms
+                cv2.waitKey(20) 
 
             # Close image
-            cv2.waitKey()
-            cv2.destroyAllWindows()
+            self.display_image()
+            key = cv2.waitKey()
+            if key ==3:
+                cv2.destroyAllWindows()
 
-            # Sort selected points in order from top left of image
-            # to bottom right
+            # Sort selected points in order from top left of image to bottom right
             self.click_coords.sort(key = lambda row: (row[1],row[0]))
             return np.asarray(self.click_coords)
 
     def draw_circle(self,event,x,y,flags,param):
+        # Text/circle parameters
+        text = "(%d,%d)" %(x,y)
+        radius = 7
+        fill = -1
+        pos = (x+6, y+6)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        size = 0.6
+        color = (50,50,255)
+        thickness = 1
+
         # Called on double click event
         if event == cv2.EVENT_LBUTTONDBLCLK:
             self.mclicks += 1
             if self.mclicks <= 4:
-                cv2.circle(self.img,(x,y),7,(255,0,0),-1)
-                cv2.putText(self.img, "(%d,%d)" %(x,y), (x+6,y+6), 
-                             cv2.FONT_HERSHEY_SIMPLEX,0.7,(255,0,0),2)
+                cv2.circle(self.img, (x,y), radius, color, fill)
+                cv2.putText(self.img, text, pos, font, size, color, thickness)
                 mouseX,mouseY = x,y
                 self.click_coords.append([mouseX,mouseY])
+
+    def display_image(self):
+        # Text parameters
+        text = "Select four points, then press 'Enter' to exit."
+        pos = (200,200)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        size = 1
+        color = (0,0,0)
+        thickness = 2
+
+        # Add text, show image
+        cv2.putText(self.img, text, pos, font, size, color, thickness)
+        cv2.imshow('image', self.img)
+
 
 if __name__ == '__main__':
     LaneCalibration = LaneCalibration('./project_video.mp4')
