@@ -2,8 +2,6 @@
 
 import cv2
 import numpy as np
-from moviepy.video.io.VideoFileClip import VideoFileClip
-from numpy.polynomial import Polynomial as P
 
 # PREV_LEFT_Y = None
 # PREV_RIGHT_Y = None
