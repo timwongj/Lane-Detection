@@ -1,4 +1,10 @@
-.idea
+# PyCharm
+.idea/
+
+# Local data
+data/
+output_images/
+
+# Other
 __pycache__
 *~
-output_images

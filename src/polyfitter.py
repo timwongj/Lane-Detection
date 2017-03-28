@@ -19,11 +19,11 @@ class Polyfitter:
         nonzerox = np.array(nonzero[1])
         margin = 100
         left_lane_inds = (
-        (nonzerox > (self.left_fit[0] * (nonzeroy ** 2) + self.left_fit[1] * nonzeroy + self.left_fit[2] - margin)) & (
-        nonzerox < (self.left_fit[0] * (nonzeroy ** 2) + self.left_fit[1] * nonzeroy + self.left_fit[2] + margin)))
+        (nonzerox > (self.left_fit[0] * (nonzeroy ** 2) + self.left_fit[1] * nonzeroy + self.left_fit[2] - margin)) &
+        (nonzerox < (self.left_fit[0] * (nonzeroy ** 2) + self.left_fit[1] * nonzeroy + self.left_fit[2] + margin)))
         right_lane_inds = (
-        (nonzerox > (self.right_fit[0] * (nonzeroy ** 2) + self.right_fit[1] * nonzeroy + self.right_fit[2] - margin)) & (
-        nonzerox < (self.right_fit[0] * (nonzeroy ** 2) + self.right_fit[1] * nonzeroy + self.right_fit[2] + margin)))
+        (nonzerox > (self.right_fit[0] * (nonzeroy ** 2) + self.right_fit[1] * nonzeroy + self.right_fit[2] - margin)) &
+        (nonzerox < (self.right_fit[0] * (nonzeroy ** 2) + self.right_fit[1] * nonzeroy + self.right_fit[2] + margin)))
 
         self.leftx = nonzerox[left_lane_inds]
         lefty = nonzeroy[left_lane_inds]
@@ -81,12 +81,18 @@ class Polyfitter:
         self.rightx = nonzerox[right_lane_inds]
         righty = nonzeroy[right_lane_inds]
 
-        self.left_fit = np.polyfit(lefty, self.leftx, 2)
-        self.right_fit = np.polyfit(righty, self.rightx, 2)
+        if len(lefty) > 0:
+            self.left_fit = np.polyfit(lefty, self.leftx, 2)
+        if len(righty) > 0:
+            self.right_fit = np.polyfit(righty, self.rightx, 2)
 
         return self.left_fit, self.right_fit
 
-    def measure_curvature(self, img):
+    @staticmethod
+    def measure_curvature(img, left_fit, right_fit):
+        if left_fit is None or right_fit is None:
+            return None, None
+
         ploty = np.linspace(0, 719, num=720)  # to cover same y-range as image
         quadratic_coeff = 3e-4  # arbitrary quadratic coefficient
         leftx = np.array([200 + (y ** 2) * quadratic_coeff + np.random.randint(-50, high=51)
@@ -101,8 +107,10 @@ class Polyfitter:
         # right_fit = np.polyfit(ploty, rightx, 2)
 
         y_eval = np.max(ploty)
-        # left_curverad = ((1 + (2 * left_fit[0] * y_eval + left_fit[1]) ** 2) ** 1.5) / np.absolute(2 * left_fit[0])
-        # right_curverad = ((1 + (2 * right_fit[0] * y_eval + right_fit[1]) ** 2) ** 1.5) / np.absolute(2 * right_fit[0])
+        # left_curverad = ((1 + (2 * left_fit[0] * y_eval + left_fit[1]) ** 2) ** 1.5)\
+        #                 / np.absolute(2 * left_fit[0])
+        # right_curverad =\
+        #     ((1 + (2 * right_fit[0] * y_eval + right_fit[1]) ** 2) ** 1.5) / np.absolute(2 * right_fit[0])
         # print(left_curverad, right_curverad)
 
         ym_per_pix = 30 / 720  # meters per pixel in y dimension
@@ -120,17 +128,20 @@ class Polyfitter:
         # print(left_curverad, 'm', right_curverad, 'm')
 
         ratio = left_curverad / right_curverad
-        if ratio < 0.66 or ratio > 1.5:
-            print('Warning: shitty ratio {}'.format(ratio))
+        # if ratio < 0.66 or ratio > 1.5:
+        #     print('Warning: shitty ratio {}'.format(ratio))
 
-        lane_leftx = self.left_fit[0] * (img.shape[0] - 1) ** 2 + self.left_fit[1] * (img.shape[0] - 1) + self.left_fit[2]
-        lane_rightx = self.right_fit[0] * (img.shape[0] - 1) ** 2 + self.right_fit[1] * (img.shape[0] - 1) + self.right_fit[2]
+        lane_leftx = left_fit[0] * (img.shape[0] - 1) ** 2 + left_fit[1] \
+                                                                  * (img.shape[0] - 1) + left_fit[2]
+        lane_rightx = right_fit[0] * (img.shape[0] - 1) ** 2 + right_fit[1] \
+                                                                    * (img.shape[0] - 1) + right_fit[2]
 
         car_pos = ((img.shape[1] / 2) - ((lane_leftx + lane_rightx) / 2)) * xm_per_pix
 
         return (left_curverad + right_curverad) / 2, car_pos.round(2)
 
-    def plot_histogram(self, img):
+    @staticmethod
+    def plot_histogram(img):
         histogram = np.sum(img[int(img.shape[0] / 2):, :], axis=0)
         plt.plot(histogram)
         plt.savefig('output_images/histogram.jpg', bbox_inches='tight', pad_inches=0)
