@@ -125,7 +125,8 @@ class LaneLines:
 
 
     def hough_lines(self, img, rho, theta, threshold, min_line_len, max_line_gap):
-        lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
+        lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len,
+                                maxLineGap=max_line_gap)
         height, width = img.shape
         line_img = np.zeros((height, width, 3), dtype=np.uint8)
 
@@ -150,7 +151,9 @@ class LaneLines:
         image = self.filter_color(image)
         image = self.canny(image, 30, 130)
         CANNY_IMG = image
-        image = self.region_of_interest(image, np.array([[(40, ysize), (xsize / 2, ysize / 2 + 40), (xsize / 2, ysize / 2 + 40), (xsize - 40, ysize)]], dtype=np.int32))
+        image = self.region_of_interest(image, np.array([[(40, ysize), (xsize / 2, ysize / 2 + 40),
+                                                          (xsize / 2, ysize / 2 + 40),
+                                                          (xsize - 40, ysize)]], dtype=np.int32))
         other_img = self.hough_lines(base_img, 1, np.pi / 90, 10, 15, 10)
 
         # return image

@@ -4,6 +4,9 @@ import numpy as np
 
 class Polydrawer:
     def draw(self, img, left_fit, right_fit, Minv):
+        if left_fit is None or right_fit is None:
+            return img
+
         color_warp = np.zeros_like(img).astype(np.uint8)
 
         fity = np.linspace(0, img.shape[0] - 1, img.shape[0])
