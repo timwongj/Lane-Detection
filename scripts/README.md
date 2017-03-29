@@ -32,3 +32,14 @@ Example:
 ```
 python convert_fps.py ~/Desktop/video.mp4 10
 ```
+
+## imagemerger_test.py
+
+- quick script to test ImageMerger class
+- outputs a merged image based on two selected images inside script
+
+Usage:
+
+```
+python3 imagemerger_test.py 
+```

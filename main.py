@@ -5,6 +5,7 @@ from src.advancedLaneDetector import AdvancedLaneDetector
 from src.undistorter import Undistorter
 from src.polydrawer import Polydrawer
 from src.polyfitter import Polyfitter
+from src.imagemerger import ImageMerger
 
 # Set camera name to 'default', 'UM', or 'blackfly' for calibration and warping
 camera = 'default'
@@ -15,6 +16,7 @@ advancedLaneDetector = AdvancedLaneDetector()
 undistorter = Undistorter(camera)
 polyfitter = Polyfitter()
 polydrawer = Polydrawer()
+imagemerger = ImageMerger() 
 
 def main():
     video = 'data/project_video'
@@ -28,26 +30,27 @@ def main():
 
 
 def process_image(img):
-    # Image Undistortion
-    undistorted = undistorter.undistort(img)
-    misc.imsave('output_images/undistorted.jpg', undistorted)
-
     # Preprocessing
-    preprocessedImg = preprocess(undistorted)
+    preprocessed_img = preprocess(img)
 
     # Lane Detection
-    advancedLaneDetector.detect_lanes(preprocessedImg, camera)
+    advancedLaneDetector.detect_lanes(preprocessed_img, camera)
     # other algorithms go here...
 
-    postprocessed_image = postprocess(undistorted)
+    postprocessed_image = postprocess(preprocessed_img)
 
     return postprocessed_image
 
 
-def preprocess(undistorted):
-    # Other preprocessing goes here...
-    preprocessed_image = undistorted
+def preprocess(img):
+    # Image undistortion
+    undistorted = undistorter.undistort(img)
+    misc.imsave('output_images/undistorted.jpg', undistorted)
 
+    # Image merging
+    merged = imagemerger.merge(undistorted, 10) # Merge every 10 frames 
+
+    preprocessed_image = merged
     return preprocessed_image
 
 

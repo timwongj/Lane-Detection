@@ -10,9 +10,9 @@ img2 = cv2.imread('/home/chris/Lane-Detection/test_images/test3.jpg')
 input_img = np.concatenate((img1, img2), axis=1)
 
 # Merge two images together
-imagemerger = ImageMerger(2)
-merged_image1 = imagemerger.merge(img1)
-merged_image2 = imagemerger.merge(img2)
+imagemerger = ImageMerger()
+merged_image1 = imagemerger.merge(img1, 2)
+merged_image2 = imagemerger.merge(img2, 2)
 
 # Stack outputs side by side
 output_img = np.concatenate((merged_image1, merged_image2), axis=1)
