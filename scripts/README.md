@@ -41,5 +41,5 @@ python convert_fps.py ~/Desktop/video.mp4 10
 Usage:
 
 ```
-python3 imagemerger_test.py 
+python imagemerger_test.py [image path 1] [image path2]
 ```

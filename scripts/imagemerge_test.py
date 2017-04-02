@@ -1,10 +1,18 @@
 import cv2
+import sys
 import numpy as np
-from imagemerger import ImageMerger
+from src.imagemerger import ImageMerger
+
+# Check for images that have been passed
+if len(sys.argv) == 3:
+	img_path1 = sys.argv[1]
+	img_path2 = sys.argv[2]
+else:
+	print("Terminal usage: python3 -m scripts.imagemerge_test.py [image path 1] [image path 2]")
 
 # Read in two test images
-img1 = cv2.imread('/home/chris/Lane-Detection/test_images/test1.jpg')
-img2 = cv2.imread('/home/chris/Lane-Detection/test_images/test3.jpg')
+img1 = cv2.imread(img_path1)
+img2 = cv2.imread(img_path2)
 
 # Stack inputs side to side
 input_img = np.concatenate((img1, img2), axis=1)
