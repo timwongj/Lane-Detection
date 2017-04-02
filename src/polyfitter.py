@@ -81,10 +81,8 @@ class Polyfitter:
         self.rightx = nonzerox[right_lane_inds]
         righty = nonzeroy[right_lane_inds]
 
-        if len(lefty) > 0:
-            self.left_fit = np.polyfit(lefty, self.leftx, 2)
-        if len(righty) > 0:
-            self.right_fit = np.polyfit(righty, self.rightx, 2)
+        self.left_fit = np.polyfit(lefty, self.leftx, 2) if len(lefty) > 0 else None
+        self.right_fit = np.polyfit(righty, self.rightx, 2) if len(righty) > 0 else None
 
         return self.left_fit, self.right_fit
 
