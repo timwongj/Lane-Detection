@@ -1,6 +1,7 @@
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
 from src.advancedLaneDetector import AdvancedLaneDetector
+from src.lineDetection import LineDetector
 from src.undistorter import Undistorter
 from src.postprocessor import Postprocessor
 
@@ -10,6 +11,7 @@ camera = 'default'
 # camera = 'blackfly'
 
 advancedLaneDetector = AdvancedLaneDetector()
+lineDetector = LineDetector()
 undistorter = Undistorter(camera)
 postprocessor = Postprocessor()
 
@@ -31,7 +33,8 @@ def process_image(img):
 
     # Lane Detection
     results = [
-        advancedLaneDetector.detect_lanes(undistorted_img, camera)
+        advancedLaneDetector.detect_lanes(undistorted_img, camera),
+cy        lineDetector.detect_lanes(undistorted_img, camera)
         # Add other algorithms here...
     ]
 
