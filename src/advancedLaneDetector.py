@@ -15,20 +15,23 @@ confidence = Confidence()
 
 class AdvancedLaneDetector:
     @staticmethod
-    def detect_lanes(undistorted_img, camera):
+    def detect_lanes(undistorted_img, camera, threshold_type):
         """
         Attempts to detect left and right lanes given an undistorted image
         and camera properties
         :param undistorted_img: numpy matrix
         :param camera: string
+        :param threshold_type: ThresholdTypes enum
         :return: AlgoResult object
         """
 
         # Initialize Result
-        res = AlgoResult()
+        res = AlgoResult('Advanced Lane Detection')
 
         # Threshold Filtering
-        img = thresholder.threshold(undistorted_img)
+        res.left_thresh = threshold_type
+        res.right_thresh = threshold_type
+        img = thresholder.threshold(undistorted_img, threshold_type)
         misc.imsave('output_images/thresholded.jpg', img)
 
         # Warping Transformation
