@@ -7,12 +7,12 @@ class LaneCalibration(object):
     def __init__(self, img):
         self.mclicks = 0 # Tracks number of mouse clicks
         self.click_coords = [] # Tracks mouse click coordinates
-        self.img = img
+        self.img = img.copy()
 
     def run(self):
         # Set mouse click event
-        cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-        cv2.setMouseCallback('image', self.display_points)
+        cv2.namedWindow('Initial src Selection', cv2.WINDOW_NORMAL)
+        cv2.setMouseCallback('Initial src Selection', self.display_points)
 
         # Wait for four mouse clicks 
         while(self.mclicks < 4):
@@ -22,15 +22,21 @@ class LaneCalibration(object):
             # Update every 20ms
             cv2.waitKey(20) 
 
-        # Close image
+        # Display image and close once any key is pressed
         self.display_image()
-        key = cv2.waitKey()
-        if key ==3:
-            cv2.destroyAllWindows()
+        cv2.waitKey()
+        cv2.destroyAllWindows()
 
-        # Sort selected points in order from top left of image to bottom right
-        self.click_coords.sort(key = lambda row: (row[1],row[0]))
-        return np.asarray(self.click_coords)
+        # Sort selected points left to right
+        self.click_coords.sort(key=lambda row: (row[0]))
+
+        # Fix large errors that occur when warping if points do not
+        # line up horizontally. Assumes user was close.
+        self.click_coords = np.asarray(self.click_coords)
+        self.click_coords[3,1] = self.click_coords[0,1]
+        self.click_coords[2,1] = self.click_coords[1,1]
+
+        return self.click_coords
 
     def display_points(self,event,x,y,flags,param):
         # Text/circle parameters
@@ -54,7 +60,7 @@ class LaneCalibration(object):
 
     def display_image(self):
         # Text parameters
-        text = "Select four points, then press 'Enter' to exit."
+        text = "Select four 'src' points, then press any key to exit."
         pos = (200,200)
         font = cv2.FONT_HERSHEY_SIMPLEX
         size = 1
@@ -63,7 +69,7 @@ class LaneCalibration(object):
 
         # Add text, show image
         cv2.putText(self.img, text, pos, font, size, color, thickness)
-        cv2.imshow('image', self.img)
+        cv2.imshow('Initial src Selection', self.img)
 
 
 if __name__ == '__main__':

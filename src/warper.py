@@ -3,24 +3,6 @@ import numpy as np
 from scipy import misc
 from src.lanecalibration import LaneCalibration
 
-transformations = {
-    'default': {
-        'src': [[580, 460], [700, 460], [1040, 680], [260, 680]],
-        'dst': [[260, 0], [1040, 0], [1040, 720], [260, 720]],
-        'shape': [1280, 720]
-    },
-    'UM': {
-        'src': [[450, 374], [860, 374], [690, 240], [560, 240]],
-        'dst': [[260, 374], [982, 374], [982, 0], [260, 0]],
-        'shape': [1242, 374]
-    },
-    'blackfly': {
-        'src': [[1149, 1024], [1299, 1024], [2448, 1798], [0, 1798]],
-        'dst': [[500, 0], [1948, 0], [1948, 2048], [500, 2048]],
-        'shape': [2448, 2048]
-    }
-}
-
 class Warper:
     def __init__(self):
         # Tracks number of warps that are called
@@ -33,6 +15,7 @@ class Warper:
             self.src = lanecalibrator.run()
 
         else:
+            # Adjust for curving and widening lane lines
             pass
 
         # Calculate dst points
@@ -40,7 +23,16 @@ class Warper:
         x2 = int(0.8 * img.shape[1]) # 80%
         y1 = 0
         y2 = img.shape[0] # Full height
-        self.dst = np.array([[x1, y1], [x2, y1], [x1, y2], [x2, y2]])
+        dst = [[x1, y1], [x1, y2], [x2, y1], [x2, y2]]
+
+        # Sort points left to right
+        dst.sort(key=lambda row: (row[0]))
+        self.dst = np.array(dst)
+
+        print('src:')
+        print(self.src)
+        print('dst')
+        print(self.dst)
 
     def warp(self, img):
         # Get self.src and self.dst points
