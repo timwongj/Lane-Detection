@@ -14,8 +14,10 @@ polydrawer = Polydrawer()
 confidence = Confidence()
 
 class AdvancedLaneDetector:
-    @staticmethod
-    def detect_lanes(undistorted_img, camera):
+    def __init__(self):
+        self.warper = Warper()
+
+    def detect_lanes(self, undistorted_img, camera):
         """
         Attempts to detect left and right lanes given an undistorted image
         and camera properties
@@ -32,14 +34,13 @@ class AdvancedLaneDetector:
         misc.imsave('output_images/thresholded.jpg', img)
 
         # Warping Transformation
-        warper = Warper(camera)
-        res.left_warp_Minv = warper.Minv
-        res.right_warp_Minv = warper.Minv
-        warper.plot_trapezoid_before_warp(img)
-        img = warper.warp(img)
+        self.warper.plot_trapezoid_before_warp(img)
+        img = self.warper.warp(img)
         warped = copy.deepcopy(img)
         misc.imsave('output_images/warped.jpg', img)
-        warper.plot_rectangle_after_warp(img)
+        self.warper.plot_rectangle_after_warp(img)
+        res.left_warp_Minv = self.warper.Minv
+        res.right_warp_Minv = self.warper.Minv
 
         # Polyfit with 2nd-order interpolation
         polyfitter.plot_histogram(img)
