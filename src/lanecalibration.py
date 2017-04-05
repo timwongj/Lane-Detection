@@ -4,39 +4,33 @@ import matplotlib.image as mpimg
 import numpy as np
 
 class LaneCalibration(object):
-    def __init__(self, video_path):
+    def __init__(self, image):
         self.mclicks = 0 # Tracks number of mouse clicks
         self.click_coords = [] # Tracks mouse click coordinates
-
-        # Capture a frame from a video and save as img
-        video_capture = cv2.VideoCapture(video_path)
-        video_capture.set(cv2.CAP_PROP_POS_MSEC,1000) # Choose 1 second into video
-        self.success, self.img = video_capture.read()
+        self.img = cv2.imread(image)
 
     def run(self):
-        # If succesful image capture
-        if self.success:
-            # Set mouse click event
-            cv2.namedWindow('image')
-            cv2.setMouseCallback('image', self.draw_circle)
+        # Set mouse click event
+        cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+        cv2.setMouseCallback('image', self.draw_circle)
 
-            # Wait for four mouse clicks 
-            while(self.mclicks < 4):
-                # Display image
-                self.display_image()
-
-                # Update every 20ms
-                cv2.waitKey(20) 
-
-            # Close image
+        # Wait for four mouse clicks 
+        while(self.mclicks < 4):
+            # Display image
             self.display_image()
-            key = cv2.waitKey()
-            if key ==3:
-                cv2.destroyAllWindows()
 
-            # Sort selected points in order from top left of image to bottom right
-            self.click_coords.sort(key = lambda row: (row[1],row[0]))
-            return np.asarray(self.click_coords)
+            # Update every 20ms
+            cv2.waitKey(20) 
+
+        # Close image
+        self.display_image()
+        key = cv2.waitKey()
+        if key ==3:
+            cv2.destroyAllWindows()
+
+        # Sort selected points in order from top left of image to bottom right
+        self.click_coords.sort(key = lambda row: (row[1],row[0]))
+        return np.asarray(self.click_coords)
 
     def draw_circle(self,event,x,y,flags,param):
         # Text/circle parameters
@@ -73,7 +67,7 @@ class LaneCalibration(object):
 
 
 if __name__ == '__main__':
-    LaneCalibration = LaneCalibration('./project_video.mp4')
+    LaneCalibration = LaneCalibration('../output_images/undistorted.jpg')
     points = LaneCalibration.run()
     print(points)
 
