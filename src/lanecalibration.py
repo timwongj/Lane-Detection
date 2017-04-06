@@ -28,7 +28,7 @@ class LaneCalibration(object):
         cv2.destroyAllWindows()
 
         # Sort selected points left to right
-        self.click_coords.sort(key=lambda row: (row[0]))
+        self.click_coords.sort(key=lambda axis: (axis[0]))
 
         # Fix large errors that occur when warping if points do not
         # line up horizontally. Assumes user was close.

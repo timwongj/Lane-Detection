@@ -8,6 +8,12 @@ class Warper:
         # Tracks number of warps that are called
         self.warp_counter = 0
 
+        # src is the trapezoidal road shape to focus on
+        self.src = 0
+
+        # dst is the rectangular birds eye shape to transform to
+        self.dst = 0
+
     def calculate_warp_shape(self, img, warp_counter):
         # Calculate src points, user selects if first time
         if warp_counter == 0:
@@ -25,14 +31,23 @@ class Warper:
         y2 = img.shape[0] # Full height
         dst = [[x1, y1], [x1, y2], [x2, y1], [x2, y2]]
 
-        # Sort points left to right
-        dst.sort(key=lambda row: (row[0]))
+        # Sort points by x axis
+        dst.sort(key=lambda axis: (axis[0]))
         self.dst = np.array(dst)
 
-        print('src:')
-        print(self.src)
-        print('dst')
-        print(self.dst)
+        # Swap first two rows for proper plotting
+        dst_copy = self.dst.copy()
+        self.dst[0] = dst_copy[1]
+        self.dst[1] = dst_copy[0]
+
+    def shift_src(self, direction):
+        return 1
+
+    def rotate_src(self, angle):
+        return 1
+
+    def scale_src(self, horizonal, vertical):
+        return 1
 
     def warp(self, img):
         # Get self.src and self.dst points
@@ -69,7 +84,7 @@ class Warper:
             return img
         else:
             before_warp_img = np.copy(img)
-            cv2.polylines(before_warp_img, [np.array(self.src, np.int32)], True, 1,
+            cv2.polylines(before_warp_img, [self.src], True, 1,
                         2)  # (img, pts, closed, color, thickness)
             cv2.putText(before_warp_img, 'Before Warp', (30, 50), cv2.FONT_HERSHEY_COMPLEX, 1,
                         1)  # (img, text, point, font, scale, color)
@@ -92,8 +107,7 @@ class Warper:
             return img
         else:
             after_warp_img = np.copy(img)
-            dst = np.array(self.dst, np.int32)
-            cv2.polylines(after_warp_img, [dst], True, 1, 2)  # (img, pts, closed, color, thickness)
+            cv2.polylines(after_warp_img, [self.dst], True, 1, 2)  # (img, pts, closed, color, thickness)
             cv2.putText(after_warp_img, 'After Warp', (30, 50), cv2.FONT_HERSHEY_COMPLEX, 1,
                         1)  # (img, text, point, font, scale, color)
             cv2.putText(after_warp_img, 'Image Size: {} x {}'.format(after_warp_img.shape[1], after_warp_img.shape[0]),
