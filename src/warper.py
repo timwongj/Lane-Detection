@@ -15,6 +15,10 @@ class Warper:
         # dst is the rectangular birds eye shape to transform to
         self.dst = 0
 
+        # Used to save the lane fit coefficients of the previous frame
+        self.left_fit = [0,0,0]
+        self.right_fit = [0,0,0]
+
     def calculate_warp_shape(self, img, warp_counter, res):
         """
         Calculates warp src and dst shapes.
@@ -30,9 +34,30 @@ class Warper:
             self.src = lanecalibrator.run()
 
         else:
-            # Get rough lane position
-            left_lane = np.mean(res.left_points[0])
-            right_lane = np.mean(res.right_points[0])
+            # Scale src to fit widening/narrowing lanes
+            try:
+                # Calculate lane widths
+                lane_width = res.right_fit[2] - res.left_fit[2]
+                previous_lane_width = self.right_fit[2] - self.left_fit[2]
+
+                # Try to catch errors before scaling
+                if previous_lane_width != 0:
+                    if lane_width < img.shape[1] and lane_width > 0:
+                        # Only allow scale if new lane width is less than 25% wider 
+                        if previous_lane_width / lane_width < 0.25:
+                            # Scale horizontally
+                            horiz_scale = lane_width - previous_lane_width
+                            self.scale_src(horiz_scale, 0)                    
+
+            # If a lane is missing, dont try and scale
+            except:
+                pass
+
+            # TODO: Correlate fit with rotate angle and rotate
+
+            # Save lane fit coefficients
+            self.left_fit = res.left_fit
+            self.right_fit = res.right_fit
 
         # Calculate dst points
         x1 = int(0.2 * img.shape[1]) # 20%
