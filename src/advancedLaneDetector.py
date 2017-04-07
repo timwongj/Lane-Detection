@@ -50,8 +50,6 @@ class AdvancedLaneDetector:
         # Polyfit with 2nd-order interpolation
         polyfitter.plot_histogram(img)
         self.res.left_fit, self.res.right_fit = polyfitter.polyfit_sliding(img)
-        self.res.left_points  = np.column_stack((polyfitter.leftx, polyfitter.lefty))
-        self.res.right_points = np.column_stack((polyfitter.rightx, polyfitter.righty))
 
         # Compute confidence
         conf_margin = warped.shape[1] / 25

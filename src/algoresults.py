@@ -7,5 +7,3 @@ class AlgoResult:
         self.conf = None
         self.left_warp_Minv = None
         self.right_warp_Minv = None
-        self.left_points = None
-        self.right_points = None
