@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from scipy import misc
+import matplotlib.pyplot as plt
 from src.lanecalibration import LaneCalibration
 
 class Warper:
@@ -14,15 +15,24 @@ class Warper:
         # dst is the rectangular birds eye shape to transform to
         self.dst = 0
 
-    def calculate_warp_shape(self, img, warp_counter):
+    def calculate_warp_shape(self, img, warp_counter, res):
+        """
+        Calculates warp src and dst shapes.
+
+        :param img : image to calculate shape on
+        :param warp_counter : count of how many previous warps have been done
+        :param res : algoresults object holding previous frame lane results
+
+        """
         # Calculate src points, user selects if first time
         if warp_counter == 0:
             lanecalibrator = LaneCalibration(img)
             self.src = lanecalibrator.run()
 
         else:
-            # Adjust for curving and widening lane lines
-            pass
+            # Get rough lane position
+            left_lane = np.mean(res.left_points[0])
+            right_lane = np.mean(res.right_points[0])
 
         # Calculate dst points
         x1 = int(0.2 * img.shape[1]) # 20%
@@ -40,18 +50,41 @@ class Warper:
         self.dst[0] = dst_copy[1]
         self.dst[1] = dst_copy[0]
 
-    def shift_src(self, direction):
-        return 1
+    def shift_src(self, horiz_amount, vert_amount):
+        """
+        Shifts trapezoid shape.
+
+        :param horiz_amount : number of pixels to shift horizontally
+        :param vert_amount  : number of pixels to shift vertically
+
+        """
+        self.src[:,0] = self.src[:,0] + horiz_amount   
+        self.src[:,1] = self.src[:,1] + vert_amount
 
     def rotate_src(self, angle):
-        return 1
+        return 
 
-    def scale_src(self, horizonal, vertical):
-        return 1
+    def scale_src(self, horiz_amount, vert_amount):
+        """
+        Shifts trapezoid shape. 
 
-    def warp(self, img):
+        :param horiz_amount : number of pixels to scale horizontally
+        :param vert_amount  : number of pixels to scale vertically
+
+        Negative number of pixels passed will result in shrinking,
+        the trapezoid, while positive will stretch.
+
+        """
+        self.src[0:2,0] = self.src[0:2,0] - horiz_amount // 2
+        self.src[2:4,0] = self.src[2:4,0] + horiz_amount // 2
+        self.src[1:3,1] = self.src[1:3,1] + vert_amount  // 2
+        self.src[0,1]   = self.src[0,1]   - vert_amount  // 2
+        self.src[3,1]   = self.src[3,1]   - vert_amount  // 2
+
+
+    def warp(self, img, res):
         # Get self.src and self.dst points
-        self.calculate_warp_shape(img, self.warp_counter)
+        self.calculate_warp_shape(img, self.warp_counter, res)
 
         # Get transform matrices
         self.M = cv2.getPerspectiveTransform(np.float32(self.src), np.float32(self.dst))
