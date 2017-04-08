@@ -43,11 +43,12 @@ class Warper:
                 # Try to catch errors before scaling
                 if previous_lane_width != 0:
                     if lane_width < img.shape[1] and lane_width > 0:
-                        # Only allow scale if new lane width is less than 25% wider 
-                        if previous_lane_width / lane_width < 0.25:
+                        # Only allow scale if new lane width is up to 25% larger or smaller
+                        lane_growth = previous_lane_width / lane_width
+                        if lane_growth > 0.75 and lane_growth < 1.25:
                             # Scale horizontally
                             horiz_scale = lane_width - previous_lane_width
-                            self.scale_src(horiz_scale, 0)                    
+                            self.scale_src(horiz_scale, 0)                   
 
             # If a lane is missing, dont try and scale
             except:
