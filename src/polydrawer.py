@@ -18,17 +18,19 @@ class Polydrawer:
         lane_overlay = np.zeros_like(img)
 
         # Draw left lane curve
-        left_lane_overlay, left_pts_unwarped = self.draw_lane_curve(
+        left_lane_overlay = self.draw_lane_curve(
             img, res.left_fit, res.left_conf, res.left_warp_Minv)
 
         # Draw right lane curve
-        right_lane_overlay, right_pts_unwarped = self.draw_lane_curve(
+        right_lane_overlay = self.draw_lane_curve(
             img, res.right_fit, res.right_conf, res.right_warp_Minv)
 
         # Compute and draw polyfill lane overlay
         if res.left_fit is not None and res.right_fit is not None:
             # Combine left and right points
-            pts = np.hstack((left_pts_unwarped, right_pts_unwarped))
+            left_pts = np.fliplr(np.array(left_lane_overlay.nonzero()[0:2]))
+            right_pts = np.array(right_lane_overlay.nonzero()[0:2])
+            pts = np.flipud(np.hstack((left_pts, right_pts)))
             pts = [np.transpose(np.array(pts, dtype=np.int32))]
 
             # Determine confidence color for polyfill
@@ -56,37 +58,27 @@ class Polydrawer:
         """
 
         lane_overlay = np.zeros_like(img)
-        lane_overlay_line = np.zeros_like(img[:, :, 1])
         unwarped_pts = None
-
-        # Recast the x and y points into usable format for cv2.fillPoly()
-        fity = np.linspace(0, img.shape[0] - 1, img.shape[0])
 
         # Compute lane overlay
         if fit is not None:
             # Create points from polyline curve
+            fity = np.linspace(0, img.shape[0] - 1, img.shape[0])
             fitx = fit[0] * fity ** 2 + fit[1] * fity + fit[2]
             pts = np.array([np.transpose(np.vstack([fitx, fity]))])
 
             # Determine confidence color for polyline
             r, g, b = self.get_color_gradient(conf)
 
-            # Overlay temporay grayscale image with polyline
-            cv2.polylines(lane_overlay_line,
-                          [np.array(pts.astype(int))], False, 1, 1)
+            # Plot polyline
+            cv2.polylines(lane_overlay,
+                          [np.array(pts.astype(int))], False, (r, g, b), 15)
 
-            # Unwarp temporary grayscale image
-            unwarped = cv2.warpPerspective(
-                lane_overlay_line, warp_Minv, (img.shape[1], img.shape[0]))
+            # Unwarp image
+            lane_overlay = cv2.warpPerspective(
+                lane_overlay, warp_Minv, (img.shape[1], img.shape[0]))
 
-            # Obtain unwarped points from unwarped grayscal image
-            unwarped_pts = np.transpose(unwarped).nonzero()
-
-            # Plot colored lane overlay on an image
-            cv2.polylines(lane_overlay, [np.transpose(
-                np.array([unwarped_pts]))], False, (r, g, b), 3)
-
-        return lane_overlay, unwarped_pts
+        return lane_overlay
 
     def draw_warped_confidence(self, warped, res, conf_margin):
         """

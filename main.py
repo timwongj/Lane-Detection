@@ -37,6 +37,7 @@ def process_image(img):
 
     # Post Processing
     postprocessed_image = postprocessor.postprocess(undistorted_img, results)
+    misc.imsave('output_images/final.jpg', postprocessed_image)
 
     return postprocessed_image
 

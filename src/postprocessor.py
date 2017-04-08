@@ -83,8 +83,8 @@ class Postprocessor:
         cv2.putText(img, "Car is {}".format(car_pos_text), (10, 100),
                     text_font, 1,  text_color, text_thickness)
         cv2.putText(img, "Confidence: {:.2f}%".format(res.conf * 100), 
-                    (10, 150), 1, text_font, text_color, text_thickness)
+                    (10, 150), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Left conf: {:.2f}%".format(res.left_conf * 100),
-                    (10, 200), 1, text_font, text_color, text_thickness)
+                    (10, 200), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Right conf: {:.2f}%".format(res.right_conf * 100),
-                    (10, 250), 1, text_font, text_color, text_thickness)
+                    (10, 250), text_font, 1, text_color, text_thickness)
