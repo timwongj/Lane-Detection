@@ -7,6 +7,8 @@ from src.confidence import Confidence
 from src.polydrawer import Polydrawer
 from src.polyfitter import Polyfitter
 from src.thresholder import Thresholder
+from src.advancedLaneDetector import AdvancedLaneDetector
+from src.warper import Warper
 from src.lanechecker import Lanechecker
 from src.warper import Warper
 
@@ -14,11 +16,11 @@ thresholder = Thresholder()
 polyfitter = Polyfitter()
 polydrawer = Polydrawer()
 confidence = Confidence()
-result = AlgoResult()
+laneFormatter = AdvancedLaneDetector()
 
 class MultiLaneDetector:
     @classmethod
-    def detect_lanes(self, undistorted_img, camera):
+    def detect_lanes(self, undistorted_img, camera, threshold):
         """
         This class detects every lane and picks the innermost
         two lanes based on slope.
@@ -29,77 +31,55 @@ class MultiLaneDetector:
         """
 
         # Initialize Result
-        res = AlgoResult()
-        copy = undistorted_img
-
-        # Blur the image
-        blur = cv2.blur(undistorted_img, (8,8))
-        misc.imsave('output_images/blurred_image.jpg', blur)
-
-        # Convert to grayscale
-        grayBlur = cv2.cvtColor(blur,cv2.COLOR_BGR2GRAY)
         grayNorm = cv2.cvtColor(undistorted_img,cv2.COLOR_BGR2GRAY)
-        misc.imsave('output_images/gray_blurred.jpg', grayBlur)
-
-        # Apply adaptive thresholding
-        thresholdB = cv2.adaptiveThreshold(grayBlur, 255,
-                                          cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                          cv2.THRESH_BINARY, 11, 2)
-        misc.imsave('output_images/threshold_blur.jpg', thresholdB)
-
-        # invert
-        invert = (255 - thresholdB)
-        misc.imsave('output_images/inverted.jpg', invert)
-
+        misc.imsave('output_images/ld_grey.jpg', grayNorm)
         thresholdN = cv2.adaptiveThreshold(grayNorm, 255,
-                                          cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                          cv2.THRESH_BINARY, 11, 2)
-
-        # invert
-        invert2 = (255 - thresholdN)
-
-        misc.imsave('output_images/threshold_norm.jpg', thresholdN)
-
+                                           cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                           cv2.THRESH_BINARY, 11, 2)
+        misc.imsave('output_images/ld_thN.jpg', thresholdN)
+        invert = (255 - thresholdN)
         minLength = 100
         maxGap = 10
+        lines = cv2.HoughLinesP(invert, 1, np.pi/180, 100,
+                                lines=None,
+                                minLineLength=minLength,
+                                maxLineGap=maxGap)
 
-        # lines = cv2.HoughLinesP(edges,1,np.pi/180,100,None,minLength,maxGap)
-        lines = cv2.HoughLinesP(invert2,1, np.pi/180,100,lines=None,
-                                minLineLength=minLength,maxLineGap=maxGap)
-
-        # calculate left line by taking maximum positive slope
         maxLeftSlope = 0
         maxRightSlope = 0
-        leftLine = []
-        rightLine = []
+        self.leftLine = []
+        self.rightLine = []
 
         # calculate slope for every line
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            #cv2.line(copy, (x1, y1),
-            #         (x2, y2), (0, 255, 0), 5)
-            #misc.imsave('output_images/all_lines.jpg', copy)
-
             leftSlope = self.slope(x2, x1, y1, y2)
             rightSlope = self.slope(x2, x1, y2, y1)
 
             # max positive slope
             if leftSlope > maxLeftSlope and undistorted_img.size / 2 > y1:
                 maxLeftSlope = leftSlope
-                leftLine = [x1,y1,x2,y2]
+                self.leftLine = [x1, y1, x2,y2]
 
             # max negative slope
             if rightSlope > maxRightSlope and undistorted_img.size / 2 > y1:
                 maxRightSlope = rightSlope
-                rightLine = [x1,y1,x2,y2]
+                self.rightLine = [x1, y1, x2, y2]
 
         # draw lines
-        cv2.line(undistorted_img,(leftLine[0], leftLine[1]),
-                 (leftLine[2],leftLine[3]),(0,255,0),5)
-        cv2.line(undistorted_img, (rightLine[0], rightLine[1]),
-                 (rightLine[2], rightLine[3]), (0, 255, 0), 5)
-        misc.imsave('output_images/lines.jpg', undistorted_img)
+        blank_image = np.zeros((invert.shape[0], invert.shape[1], 3), np.uint8)
+        blank_image[:, :] = (0, 0, 0)
+        cv2.line(blank_image,
+                 (self.leftLine[0], self.leftLine[1]),
+                 (self.leftLine[2], self.leftLine[3]),
+                 (255, 255, 255), 5)
+        cv2.line(blank_image,
+                 (self.rightLine[0], self.rightLine[1]),
+                 (self.rightLine[2], self.rightLine[3]),
+                 (255, 255, 255), 5)
+        misc.imsave('output_images/ld_out.jpg', blank_image)
 
+        res = laneFormatter.detect_lanes(blank_image, camera, threshold)
         return res
 
     @staticmethod

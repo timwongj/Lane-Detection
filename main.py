@@ -1,6 +1,7 @@
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
 from src.advancedLaneDetector import AdvancedLaneDetector
+from src.multiLaneDetector import MultiLaneDetector
 from src.undistorter import Undistorter
 from src.postprocessor import Postprocessor
 from src.thresholdtypes import ThresholdTypes
@@ -11,6 +12,7 @@ camera = 'default'
 # camera = 'blackfly'
 
 advancedLaneDetector = AdvancedLaneDetector()
+lineDetector = MultiLaneDetector()
 undistorter = Undistorter(camera)
 postprocessor = Postprocessor()
 thresholdTypes = list(map(int, ThresholdTypes))
@@ -41,6 +43,8 @@ def process_image(img):
     for threshold in thresholdTypes:
         # Run advanced lane detection
         results.append(advancedLaneDetector.detect_lanes(
+            undistorted_img, camera, threshold))
+        results.append(lineDetector.detect_lanes(
             undistorted_img, camera, threshold))
 
         # Check if left and right confidence are acceptable
