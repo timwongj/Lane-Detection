@@ -15,20 +15,23 @@ confidence = Confidence()
 
 class AdvancedLaneDetector:
     @staticmethod
-    def detect_lanes(undistorted_img, camera):
+    def detect_lanes(undistorted_img, camera, threshold_type):
         """
         Attempts to detect left and right lanes given an undistorted image
         and camera properties
         :param undistorted_img: numpy matrix
         :param camera: string
+        :param threshold_type: ThresholdTypes enum
         :return: AlgoResult object
         """
 
         # Initialize Result
-        res = AlgoResult()
+        res = AlgoResult('Advanced Lane Detection')
 
         # Threshold Filtering
-        img = thresholder.threshold(undistorted_img)
+        res.left_thresh = threshold_type
+        res.right_thresh = threshold_type
+        img = thresholder.threshold(undistorted_img, threshold_type)
         misc.imsave('output_images/thresholded.jpg', img)
 
         # Warping Transformation
@@ -42,7 +45,6 @@ class AdvancedLaneDetector:
         warper.plot_rectangle_after_warp(img)
 
         # Polyfit with 2nd-order interpolation
-        polyfitter.plot_histogram(img)
         res.left_fit, res.right_fit = polyfitter.polyfit(img)
 
         # Compute confidence
@@ -50,18 +52,5 @@ class AdvancedLaneDetector:
         res.conf, res.left_conf, res.right_conf = confidence.compute_confidence(
             warped, res.left_fit, res.right_fit, conf_margin)
         polydrawer.draw_warped_confidence(warped, res, conf_margin)
-
-        # Write information
-        final = copy.deepcopy(undistorted_img)
-        cv2.putText(final, "Confidence: {:.2f}%".format(res.conf * 100),
-                    (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-        cv2.putText(final, "Left conf: {:.2f}%".format(res.left_conf * 100),
-                    (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-        cv2.putText(final, "Right conf: {:.2f}%".format(res.right_conf * 100),
-                    (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-
-        # Draw overlaid lane
-        final = polydrawer.draw_lane(final, res)
-        misc.imsave('output_images/advanced_lane_detection.jpg', final)
 
         return res
