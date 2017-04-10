@@ -4,6 +4,7 @@ from src.algoresults import AlgoResult
 from src.confidence import Confidence
 from src.polydrawer import Polydrawer
 from src.polyfitter import Polyfitter
+from src.thresholdtypes import ThresholdTypes
 
 confidence = Confidence()
 polydrawer = Polydrawer()
@@ -30,7 +31,7 @@ class Postprocessor:
     @staticmethod
     def select_result(results):
         # Initialize final result
-        final_res = AlgoResult()
+        final_res = AlgoResult(None)
 
         # Find the highest left_conf and use its left_fit and left_warp_Minv
         for res in results:
@@ -38,10 +39,14 @@ class Postprocessor:
                 final_res.left_conf = res.left_conf
                 final_res.left_fit = res.left_fit
                 final_res.left_warp_Minv = res.left_warp_Minv
+                final_res.left_alg = res.left_alg
+                final_res.left_thresh = res.left_thresh
             if res.right_conf > final_res.right_conf:
                 final_res.right_conf = res.right_conf
                 final_res.right_fit = res.right_fit
                 final_res.right_warp_Minv = res.right_warp_Minv
+                final_res.right_alg = res.right_alg
+                final_res.right_thresh = res.right_thresh
 
         # Compute combined confidence
         final_res.conf = np.sqrt(final_res.left_conf * final_res.right_conf)
@@ -88,3 +93,9 @@ class Postprocessor:
                     (10, 200), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Right conf: {:.2f}%".format(res.right_conf * 100),
                     (10, 250), text_font, 1, text_color, text_thickness)
+        cv2.putText(img, "Left Thresh: {}".format(
+            ThresholdTypes(res.left_thresh).name),
+                    (10, 300), text_font, 1, text_color, text_thickness)
+        cv2.putText(img, "Right Thresh: {}".format(
+            ThresholdTypes(res.right_thresh).name),
+                    (10, 350), text_font, 1, text_color, text_thickness)
