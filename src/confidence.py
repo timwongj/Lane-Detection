@@ -31,6 +31,14 @@ class Confidence:
         return conf, left_conf, right_conf
 
     @staticmethod
+    def compute_line_confidence(warped, fit, conf_margin, x_offset):
+        """
+        Helper method for compute_confidence (line detection)
+        
+        """
+
+
+    @staticmethod
     def compute_lane_confidence(warped, fit, conf_margin, x_offset):
         """
         Helper method for compute_confidence

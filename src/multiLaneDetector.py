@@ -10,7 +10,6 @@ from src.thresholder import Thresholder
 from src.advancedLaneDetector import AdvancedLaneDetector
 from src.warper import Warper
 from src.lanechecker import Lanechecker
-from src.warper import Warper
 
 thresholder = Thresholder()
 polyfitter = Polyfitter()
@@ -19,6 +18,10 @@ confidence = Confidence()
 laneFormatter = AdvancedLaneDetector()
 
 class MultiLaneDetector:
+    def __init__(self):
+        self.leftLine = None
+        self.rightLine = None
+
     @classmethod
     def detect_lanes(self, undistorted_img, camera, threshold):
         """
@@ -78,6 +81,26 @@ class MultiLaneDetector:
                  (self.rightLine[2], self.rightLine[3]),
                  (255, 255, 255), 5)
         misc.imsave('output_images/ld_out.jpg', blank_image)
+
+        # warp image
+        warper = Warper(camera)
+        warped = warper.warp(invert)
+
+        # calculate left fit and right fit
+        left_fit = np.array([[self.leftLine[0], self.leftLine[1], 1],
+                             [self.leftLine[2], self.leftLine[3], 1]],
+                            np.float64)
+
+        wl_fit = warper.warp(left_fit)
+
+        # right_fit = [self.leftLine[0], self.leftLine[1], 1]
+
+        # compute confidence
+        res = AlgoResult('Line Detection')
+        conf_margin = warped.shape[1] / 25
+        res.conf, res.left_conf, res.right_conf = confidence.compute_confidence(
+            warped, self.leftLine, self.rightLine, conf_margin
+        )
 
         res = laneFormatter.detect_lanes(blank_image, camera, threshold)
         return res
