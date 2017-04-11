@@ -31,12 +31,12 @@ class AdvancedLaneDetector:
         :return: AlgoResult object
         """
 
-        # Merge last images together
-        merged_img = imagemerger.merge(undistorted_img, 4)
-
         # Threshold Filtering
-        img = thresholder.threshold(merged_img)
+        img = thresholder.threshold(undistorted_img)
         misc.imsave('output_images/thresholded.jpg', img)
+
+        # Merge last images together
+        img = imagemerger.merge(img, 10)
 
         # Warping Transformation
         self.warper.plot_trapezoid_before_warp(img)

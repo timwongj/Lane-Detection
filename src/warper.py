@@ -7,74 +7,55 @@ from src.lanecalibration import LaneCalibration
 class Warper:
     def __init__(self):
         # Tracks number of warps that are called
-        self.warp_counter = 0
+        self.warp_counter = 0                               
 
-        # src is the trapezoidal road shape to focus on
-        self.src = 0
-
-        # dst is the rectangular birds eye shape to transform to
-        self.dst = 0
-
-        # Used to save the lane fit coefficients of the previous frame
-        self.left_fit = [0,0,0]
-        self.right_fit = [0,0,0]
-
-    def calculate_warp_shape(self, img, warp_counter, res):
+    def calculate_warp_shape(self, img, res):     
         """
         Calculates warp src and dst shapes.
 
         :param img : image to calculate shape on
-        :param warp_counter : count of how many previous warps have been done
         :param res : algoresults object holding previous frame lane results
 
         """
-        # Calculate src points, user selects if first time
-        if warp_counter == 0:
-            lanecalibrator = LaneCalibration(img)
-            self.src = lanecalibrator.run()
 
+        # Get src trapezoid shape from lane lines if not first frame
+        if self.warp_counter is not 0:
+            # Get lane line points
+            left_lane, right_lane = res.calculate_lane_pts(img)
+
+            if left_lane is not None and right_lane is not None:
+                # Create 4 src points
+                p1 = left_lane[-1]
+                p2 = left_lane[0]
+                p3 = right_lane[0]
+                p4 = right_lane[-1]
+
+                src = [p1, p2, p3, p4]
+                self.src = np.array(src)
+
+            else:
+                self.src = self.default_src
+
+        # Create default src values
         else:
-            # Scale src to fit widening/narrowing lanes
-            try:
-                # Calculate lane widths
-                lane_width = res.right_fit[2] - res.left_fit[2]
-                previous_lane_width = self.right_fit[2] - self.left_fit[2]
+            x1 = int(0.2 * img.shape[1]) 
+            x2 = int(0.35 * img.shape[1]) 
+            x3 = int(0.65 * img.shape[1]) 
+            x4 = int(0.9 * img.shape[1]) 
+            y1 = int(0.9 * img.shape[0]) 
+            y2 = int(0.7 * img.shape[0]) 
 
-                # Try to catch errors before scaling
-                if previous_lane_width != 0:
-                    if lane_width < img.shape[1] and lane_width > 0:
-                        # Only allow scale if new lane width is up to 25% larger or smaller
-                        lane_growth = previous_lane_width / lane_width
-                        if lane_growth > 0.75 and lane_growth < 1.25:
-                            # Scale horizontally
-                            horiz_scale = lane_width - previous_lane_width
-                            self.scale_src(horiz_scale, 0)                   
-
-            # If a lane is missing, dont try and scale
-            except:
-                pass
-
-            # TODO: Correlate fit with rotate angle and rotate
-
-            # Save lane fit coefficients
-            self.left_fit = res.left_fit
-            self.right_fit = res.right_fit
+            src = [[x1,y1], [x2,y2], [x3,y2], [x4,y1]]
+            self.src = np.array(src)
+            self.default_src = self.src
 
         # Calculate dst points
         x1 = int(0.2 * img.shape[1]) # 20%
         x2 = int(0.8 * img.shape[1]) # 80%
-        y1 = 0
-        y2 = img.shape[0] # Full height
-        dst = [[x1, y1], [x1, y2], [x2, y1], [x2, y2]]
-
-        # Sort points by x axis
-        dst.sort(key=lambda axis: (axis[0]))
+        y1 = img.shape[0] # Full height
+        y2 = 0
+        dst = [[x1, y1], [x1, y2], [x2, y2], [x2, y1]]  
         self.dst = np.array(dst)
-
-        # Swap first two rows for proper plotting
-        dst_copy = self.dst.copy()
-        self.dst[0] = dst_copy[1]
-        self.dst[1] = dst_copy[0]
 
     def shift_src(self, horiz_amount, vert_amount):
         """
@@ -110,7 +91,7 @@ class Warper:
 
     def warp(self, img, res):
         # Get self.src and self.dst points
-        self.calculate_warp_shape(img, self.warp_counter, res)
+        self.calculate_warp_shape(img, res)
 
         # Get transform matrices
         self.M = cv2.getPerspectiveTransform(np.float32(self.src), np.float32(self.dst))
