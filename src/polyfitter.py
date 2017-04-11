@@ -9,10 +9,12 @@ class Polyfitter:
         self.right_fit = None
         self.leftx = None
         self.rightx = None
+        self.lefty = None
+        self.righty = None
 
     def polyfit(self, img):
-        # if self.left_fit is None:
-        return self.polyfit_sliding(img)
+        if self.left_fit is None:
+            return self.polyfit_sliding(img)
 
         nonzero = img.nonzero()
         nonzeroy = np.array(nonzero[0])
@@ -26,11 +28,11 @@ class Polyfitter:
         (nonzerox < (self.right_fit[0] * (nonzeroy ** 2) + self.right_fit[1] * nonzeroy + self.right_fit[2] + margin)))
 
         self.leftx = nonzerox[left_lane_inds]
-        lefty = nonzeroy[left_lane_inds]
+        self.lefty = nonzeroy[left_lane_inds]
         self.rightx = nonzerox[right_lane_inds]
-        righty = nonzeroy[right_lane_inds]
-        self.left_fit = np.polyfit(lefty, self.leftx, 2)
-        self.right_fit = np.polyfit(righty, self.rightx, 2)
+        self.righty = nonzeroy[right_lane_inds]
+        self.left_fit = np.polyfit(self.lefty, self.leftx, 2)
+        self.right_fit = np.polyfit(self.righty, self.rightx, 2)
 
         return self.left_fit, self.right_fit
 
@@ -77,12 +79,12 @@ class Polyfitter:
         right_lane_inds = np.concatenate(right_lane_inds)
 
         self.leftx = nonzerox[left_lane_inds]
-        lefty = nonzeroy[left_lane_inds]
+        self.lefty = nonzeroy[left_lane_inds]
         self.rightx = nonzerox[right_lane_inds]
-        righty = nonzeroy[right_lane_inds]
+        self.righty = nonzeroy[right_lane_inds]
 
-        self.left_fit = np.polyfit(lefty, self.leftx, 2) if len(lefty) > 0 else None
-        self.right_fit = np.polyfit(righty, self.rightx, 2) if len(righty) > 0 else None
+        self.left_fit = np.polyfit(self.lefty, self.leftx, 2) if len(self.lefty) > 0 else None
+        self.right_fit = np.polyfit(self.righty, self.rightx, 2) if len(self.righty) > 0 else None
 
         return self.left_fit, self.right_fit
 

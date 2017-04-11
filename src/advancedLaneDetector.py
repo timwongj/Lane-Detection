@@ -1,5 +1,4 @@
 import copy
-import cv2
 from scipy import misc
 from src.algoresults import AlgoResult
 from src.confidence import Confidence
@@ -7,50 +6,58 @@ from src.polydrawer import Polydrawer
 from src.polyfitter import Polyfitter
 from src.thresholder import Thresholder
 from src.warper import Warper
+from src.imagemerger import ImageMerger
 
 thresholder = Thresholder()
-polyfitter = Polyfitter()
-polydrawer = Polydrawer()
-confidence = Confidence()
+polyfitter  = Polyfitter()
+polydrawer  = Polydrawer()
+confidence  = Confidence()
+imagemerger = ImageMerger()
+
 
 class AdvancedLaneDetector:
-    @staticmethod
-    def detect_lanes(undistorted_img, camera, threshold_type):
+    def __init__(self):
+        # Initialize objects to hold object data from previous frames
+        self.warper = Warper()
+        self.res = AlgoResult('Advanced Lane Detection')
+
+    def detect_lanes(self, undistorted_img, threshold_type, num_merged):
         """
         Attempts to detect left and right lanes given an undistorted image
         and camera properties
         :param undistorted_img: numpy matrix
-        :param camera: string
         :param threshold_type: ThresholdTypes enum
+        :param num_merged: number of images merged
         :return: AlgoResult object
         """
 
-        # Initialize Result
-        res = AlgoResult('Advanced Lane Detection')
-
         # Threshold Filtering
-        res.left_thresh = threshold_type
-        res.right_thresh = threshold_type
+        self.res.left_thresh = threshold_type
+        self.res.right_thresh = threshold_type
         img = thresholder.threshold(undistorted_img, threshold_type)
         misc.imsave('output_images/thresholded.jpg', img)
 
+        # Merge last images together
+        img = imagemerger.merge(img, num_merged)
+        self.res.num_merged_left = num_merged
+        self.res.num_merged_right = num_merged
+
         # Warping Transformation
-        warper = Warper(camera)
-        res.left_warp_Minv = warper.Minv
-        res.right_warp_Minv = warper.Minv
-        warper.plot_trapezoid_before_warp(img)
-        img = warper.warp(img)
+        self.warper.plot_trapezoid_before_warp(img)
+        img = self.warper.warp(img, self.res)
         warped = copy.deepcopy(img)
-        misc.imsave('output_images/warped.jpg', img)
-        warper.plot_rectangle_after_warp(img)
+        self.warper.plot_rectangle_after_warp(img)
+        self.res.left_warp_Minv = self.warper.Minv
+        self.res.right_warp_Minv = self.warper.Minv
+        self.res.warp_src = self.warper.src
 
         # Polyfit with 2nd-order interpolation
-        res.left_fit, res.right_fit = polyfitter.polyfit(img)
+        self.res.left_fit, self.res.right_fit = polyfitter.polyfit_sliding(img)
 
         # Compute confidence
         conf_margin = warped.shape[1] / 25
-        res.conf, res.left_conf, res.right_conf = confidence.compute_confidence(
-            warped, res.left_fit, res.right_fit, conf_margin)
-        polydrawer.draw_warped_confidence(warped, res, conf_margin)
+        self.res.conf, self.res.left_conf, self.res.right_conf = confidence.compute_confidence(
+            warped, self.res.left_fit, self.res.right_fit, conf_margin)
+        polydrawer.draw_warped_confidence(warped, self.res, conf_margin)
 
-        return res
+        return self.res

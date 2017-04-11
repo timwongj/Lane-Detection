@@ -30,7 +30,7 @@ class Thresholder:
         scaled_sobel = np.arctan2(abs_sobely, abs_sobelx)
         sxbinary = np.zeros_like(scaled_sobel)
         sxbinary[(scaled_sobel >= THRESH_DIR_MIN) &
-                 (scaled_sobel <= THRESH_DIR_MAX)] = 1
+                 (scaled_sobel <= THRESH_DIR_MAX)] = 255
 
         return sxbinary
 
@@ -50,7 +50,7 @@ class Thresholder:
         gradmag = (gradmag / scale_factor).astype(np.uint8)
         binary_output = np.zeros_like(gradmag)
         binary_output[(gradmag >= THRESH_MAG_MIN) &
-                      (gradmag <= THRESH_MAG_MAX)] = 1
+                      (gradmag <= THRESH_MAG_MAX)] = 255
 
         return binary_output
 
@@ -74,7 +74,7 @@ class Thresholder:
         white_mask = cv2.inRange(img, white_min, white_max)
 
         binary_output = np.zeros_like(img[:, :, 0])
-        binary_output[((yellow_mask != 0) | (white_mask != 0))] = 1
+        binary_output[((yellow_mask != 0) | (white_mask != 0))] = 255
 
         filtered = img
         filtered[((yellow_mask == 0) & (white_mask == 0))] = 0
@@ -95,7 +95,7 @@ class Thresholder:
         color = self.color_thresh(img, y_min, w_min)
 
         combined = np.zeros_like(direc)
-        combined[((color == 1) & ((mag == 1) | (direc == 1)))] = 1
+        combined[((color > 0) & ((mag > 0) | (direc > 0)))] = 255
 
         return combined
 

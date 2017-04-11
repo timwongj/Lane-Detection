@@ -99,13 +99,13 @@ class Polydrawer:
         # Write information on image
         cv2.putText(img_confidence, "Confidence: {:.2f}%".format(
             res.conf * 100), (10, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                    1, color=1, thickness=2)
+                    1, color=127, thickness=2)
         cv2.putText(img_confidence, "Left conf: {:.2f}%".format(
             res.left_conf * 100), (10, 100), cv2.FONT_HERSHEY_SIMPLEX,
-                    1, color=1, thickness=2)
+                    1, color=127, thickness=2)
         cv2.putText(img_confidence, "Right conf: {:.2f}%".format(
             res.right_conf * 100), (10, 150), cv2.FONT_HERSHEY_SIMPLEX,
-                    1, color=1, thickness=2)
+                    1, color=127, thickness=2)
 
         misc.imsave('output_images/advanced_lane_detection_confidence.jpg',
                     img_confidence)
@@ -133,8 +133,8 @@ class Polydrawer:
                 np.vstack([fitx + conf_margin, fity]))], np.int32)]
 
             # Plot polyline confidence boundaries on image
-            cv2.polylines(img, left_boundary_pts, False, 1, 2)
-            cv2.polylines(img, right_boundary_pts, False, 1, 2)
+            cv2.polylines(img, left_boundary_pts, False, 127, 2)
+            cv2.polylines(img, right_boundary_pts, False, 127, 2)
 
     @staticmethod
     def get_color_gradient(conf):
