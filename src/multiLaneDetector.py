@@ -9,6 +9,7 @@ from src.polyfitter import Polyfitter
 from src.thresholder import Thresholder
 from src.advancedLaneDetector import AdvancedLaneDetector
 from src.warper import Warper
+from src.thresholdtypes import ThresholdTypes
 from src.lanechecker import Lanechecker
 
 thresholder = Thresholder()
@@ -19,8 +20,14 @@ laneFormatter = AdvancedLaneDetector()
 
 class MultiLaneDetector:
     def __init__(self):
-        self.leftLine = None
-        self.rightLine = None
+        self.left_line = None
+        self.right_line = None
+        self.left_fit = []
+        self.right_fit = []
+        self.leftx = []
+        self.lefty = []
+        self.rightx = []
+        self.righty = []
 
     @classmethod
     def detect_lanes(self, undistorted_img, camera, threshold):
@@ -33,7 +40,7 @@ class MultiLaneDetector:
         :return: AlgoResult object
         """
 
-        # Initialize Result
+
         grayNorm = cv2.cvtColor(undistorted_img,cv2.COLOR_BGR2GRAY)
         misc.imsave('output_images/ld_grey.jpg', grayNorm)
         thresholdN = cv2.adaptiveThreshold(grayNorm, 255,
@@ -41,6 +48,15 @@ class MultiLaneDetector:
                                            cv2.THRESH_BINARY, 11, 2)
         misc.imsave('output_images/ld_thN.jpg', thresholdN)
         invert = (255 - thresholdN)
+        misc.imsave('output_images/ld_inverted.jpg', invert)
+
+        combined = thresholder.threshold(undistorted_img,
+                                         ThresholdTypes.COMBINED)
+        misc.imsave('output_images/ld_combined.jpg', combined)
+
+        blur = cv2.blur(invert,(10,10))
+        misc.imsave('output_images/ld_inverted_blurred.jpg', blur)
+
         minLength = 100
         maxGap = 10
         lines = cv2.HoughLinesP(invert, 1, np.pi/180, 100,
@@ -50,8 +66,8 @@ class MultiLaneDetector:
 
         maxLeftSlope = 0
         maxRightSlope = 0
-        self.leftLine = []
-        self.rightLine = []
+        self.left_line = []
+        self.right_line = []
 
         # calculate slope for every line
         for line in lines:
@@ -62,47 +78,69 @@ class MultiLaneDetector:
             # max positive slope
             if leftSlope > maxLeftSlope and undistorted_img.size / 2 > y1:
                 maxLeftSlope = leftSlope
-                self.leftLine = [x1, y1, x2,y2]
+                self.left_line = [x1, y1, x2,y2]
 
             # max negative slope
             if rightSlope > maxRightSlope and undistorted_img.size / 2 > y1:
                 maxRightSlope = rightSlope
-                self.rightLine = [x1, y1, x2, y2]
+                self.right_line = [x1, y1, x2, y2]
 
         # draw lines
         blank_image = np.zeros((invert.shape[0], invert.shape[1], 3), np.uint8)
         blank_image[:, :] = (0, 0, 0)
         cv2.line(blank_image,
-                 (self.leftLine[0], self.leftLine[1]),
-                 (self.leftLine[2], self.leftLine[3]),
+                 (self.left_line[0], self.left_line[1]),
+                 (self.left_line[2], self.left_line[3]),
                  (255, 255, 255), 5)
         cv2.line(blank_image,
-                 (self.rightLine[0], self.rightLine[1]),
-                 (self.rightLine[2], self.rightLine[3]),
+                 (self.right_line[0], self.right_line[1]),
+                 (self.right_line[2], self.right_line[3]),
                  (255, 255, 255), 5)
         misc.imsave('output_images/ld_out.jpg', blank_image)
 
         # warp image
         warper = Warper(camera)
-        warped = warper.warp(invert)
+        warped_pic = warper.warp(combined)
+        misc.imsave('output_images/ld_warped.jpg', warped_pic)
+
+        # warp lines
+        warped_lines = warper.warp(blank_image)
+        misc.imsave('output_images/ld_warped_lines.jpg', warped_lines)
 
         # calculate left fit and right fit
-        left_fit = np.array([[self.leftLine[0], self.leftLine[1], 1],
-                             [self.leftLine[2], self.leftLine[3], 1]],
-                            np.float64)
+        nonzero = np.nonzero(warped_lines)
+        nonzerox, nonzeroy = nonzero[1], nonzero[0]
+        left_x = []
+        left_y = []
+        right_x = []
+        right_y = []
+        for index, item in enumerate(nonzerox):
+            if item < warped_lines.shape[1] / 2:
+                left_x.append(item)
+                left_y.append(nonzeroy[index])
+            else:
+                right_x.append(item)
+                right_y.append(nonzeroy[index])
 
-        wl_fit = warper.warp(left_fit)
+        # left_x, left_y = nonzero[1] < warped_lines.shape[1], nonzero[0]
+        # right_x, right_y = nonzero[1] >= warped_lines.shape[1], nonzero[0]
 
-        # right_fit = [self.leftLine[0], self.leftLine[1], 1]
+        self.left_fit = np.polyfit(left_y, left_x, 1) if len(
+            left_y) > 0 else None
+        self.right_fit = np.polyfit(right_y, right_x, 1) if len(
+            right_y) > 0 else None
+        polyfitter.plot_histogram(warped_lines)
+
 
         # compute confidence
         res = AlgoResult('Line Detection')
-        conf_margin = warped.shape[1] / 25
+        conf_margin = warped_lines.shape[1] / 25
         res.conf, res.left_conf, res.right_conf = confidence.compute_confidence(
-            warped, self.leftLine, self.rightLine, conf_margin
+            warped_lines, self.left_fit, self.right_fit, conf_margin
         )
 
-        res = laneFormatter.detect_lanes(blank_image, camera, threshold)
+        # Initialize Result
+        res = AlgoResult('Line Detection')
         return res
 
     @staticmethod

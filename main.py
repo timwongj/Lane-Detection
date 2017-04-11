@@ -40,26 +40,29 @@ def process_image(img):
 
     # Lane Detection
     results = []
-    for threshold in thresholdTypes:
+
+    results.append(lineDetector.detect_lanes(
+                   undistorted_img, camera, None))
+
+    # for threshold in thresholdTypes:
         # Run advanced lane detection
-        results.append(advancedLaneDetector.detect_lanes(
-            undistorted_img, camera, threshold))
-        results.append(lineDetector.detect_lanes(
-            undistorted_img, camera, threshold))
+        # results.append(advancedLaneDetector.detect_lanes(
+        #    undistorted_img, camera, threshold))
+        #
 
         # Check if left and right confidence are acceptable
-        if results[-1].left_conf >= acceptable_conf:
-            left_thresh = threshold
-        if results[-1].right_conf >= acceptable_conf:
-            right_thresh = threshold
+        # if results[-1].left_conf >= acceptable_conf:
+        #     left_thresh = threshold
+        # if results[-1].right_conf >= acceptable_conf:
+        #     right_thresh = threshold
 
         # Reorder threshold priority for more efficient run on next frame
-        if left_thresh is not None and right_thresh is not None:
-            thresholdTypes.remove(left_thresh)
-            thresholdTypes.insert(0, left_thresh)
-            thresholdTypes.remove(right_thresh)
-            thresholdTypes.insert(0, right_thresh)
-            break
+        # if left_thresh is not None and right_thresh is not None:
+        #     thresholdTypes.remove(left_thresh)
+        #     thresholdTypes.insert(0, left_thresh)
+        #     thresholdTypes.remove(right_thresh)
+        #     thresholdTypes.insert(0, right_thresh)
+        #     break
 
     # Post Processing
     postprocessed_image = postprocessor.postprocess(undistorted_img, results)
