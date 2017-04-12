@@ -14,8 +14,6 @@ class AlgoResult:
         self.conf = None
         self.left_warp_Minv = None
         self.right_warp_Minv = None
-        self.num_merged_left = None
-        self.num_merged_right = None
         self.warp_src = None
 
     def calculate_lane_pts(self, img):

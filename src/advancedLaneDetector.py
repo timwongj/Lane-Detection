@@ -7,13 +7,11 @@ from src.polyfitter import Polyfitter
 from src.thresholder import Thresholder
 from src.thresholdtypes import ThresholdTypes
 from src.warper import Warper
-from src.imagemerger import ImageMerger
 
 thresholder = Thresholder()
 polyfitter  = Polyfitter()
 polydrawer  = Polydrawer()
 confidence  = Confidence()
-imagemerger = ImageMerger()
 
 
 class AdvancedLaneDetector:
@@ -22,7 +20,7 @@ class AdvancedLaneDetector:
         self.warper = Warper(camera)
         self.res = AlgoResult('Advanced Lane Detection')
 
-    def detect_lanes(self, undistorted_img, threshold_type, num_merged):
+    def detect_lanes(self, undistorted_img, threshold_type):
         """
         Attempts to detect left and right lanes given an undistorted image
         and camera properties
@@ -36,11 +34,6 @@ class AdvancedLaneDetector:
         self.res.left_thresh = threshold_type
         self.res.right_thresh = threshold_type
         img = thresholder.threshold(undistorted_img, threshold_type)
-
-        # Merge last images together
-        img = imagemerger.merge(img, num_merged)
-        self.res.num_merged_left = num_merged
-        self.res.num_merged_right = num_merged
 
         # Warping Transformation
         self.warper.plot_trapezoid_before_warp(img)

@@ -37,7 +37,6 @@ class Postprocessor:
                 final_res.left_warp_Minv = res.left_warp_Minv
                 final_res.left_alg = res.left_alg
                 final_res.left_thresh = res.left_thresh
-                final_res.num_merged_left = res.num_merged_left
                 final_res.warp_src = res.warp_src
             if res.right_conf > final_res.right_conf:
                 final_res.right_conf = res.right_conf
@@ -45,7 +44,6 @@ class Postprocessor:
                 final_res.right_warp_Minv = res.right_warp_Minv
                 final_res.right_alg = res.right_alg
                 final_res.right_thresh = res.right_thresh
-                final_res.num_merged_right = res.num_merged_right
                 final_res.warp_src = res.warp_src
 
         # Compute combined confidence
@@ -82,7 +80,3 @@ class Postprocessor:
         cv2.putText(img, "Right Thresh: {}".format(
             ThresholdTypes(res.right_thresh).name),
                     (10, 250), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Left Images Merged: {}".format(res.num_merged_left),
-                    (10, 300), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Right Images Merged: {}".format(res.num_merged_right),
-                    (10, 350), text_font, 1, text_color, text_thickness)

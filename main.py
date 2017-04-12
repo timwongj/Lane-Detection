@@ -2,6 +2,7 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
 from src.advancedLaneDetector import AdvancedLaneDetector
 from src.undistorter import Undistorter
+from src.imagemerger import ImageMerger
 from src.postprocessor import Postprocessor
 from src.thresholdtypes import ThresholdTypes
 
@@ -13,6 +14,7 @@ camera = 'default'
 
 advancedLaneDetector = AdvancedLaneDetector(camera)
 undistorter = Undistorter(camera)
+imagemerger = ImageMerger()
 postprocessor = Postprocessor()
 threshold_types = list(map(int, ThresholdTypes))
 
@@ -34,8 +36,12 @@ def process_image(img):
     undistorted_img = undistorter.undistort(img)
     misc.imsave('output_images/undistorted.jpg', undistorted_img)
 
+    # Image Merging
+    merged_img = imagemerger.merge(undistorted_img, 10)
+    misc.imsave('output_images/merged.jpg', merged_img)
+
     # Run Lane Detection Algorithms
-    results = run_lane_detection_algs(undistorted_img)
+    results = run_lane_detection_algs(merged_img)
 
     # Post Processing
     postprocessed_image = postprocessor.postprocess(undistorted_img, results)
@@ -50,30 +56,25 @@ def run_lane_detection_algs(undistorted_img):
     left_thresh = None
     right_thresh = None
 
-    # Define number of images to be merged
-    # num_merged_images = [1, 10]
-    num_merged_images = [1]
-
     results = []
-    for num_merged in num_merged_images:
-        for threshold in threshold_types:
-            # Run advanced lane detection
-            results.append(advancedLaneDetector.detect_lanes(
-                undistorted_img, threshold, num_merged))
+    for threshold in threshold_types:
+        # Run advanced lane detection
+        results.append(advancedLaneDetector.detect_lanes(
+            undistorted_img, threshold))
 
-            # Check if left and right confidence are acceptable
-            if results[-1].left_conf >= acceptable_conf:
-                left_thresh = threshold
-            if results[-1].right_conf >= acceptable_conf:
-                right_thresh = threshold
+        # Check if left and right confidence are acceptable
+        if results[-1].left_conf >= acceptable_conf:
+            left_thresh = threshold
+        if results[-1].right_conf >= acceptable_conf:
+            right_thresh = threshold
 
-            # Reorder threshold priority for more efficient run on next frame
-            if left_thresh is not None and right_thresh is not None:
-                threshold_types.remove(left_thresh)
-                threshold_types.insert(0, left_thresh)
-                threshold_types.remove(right_thresh)
-                threshold_types.insert(0, right_thresh)
-                return results
+        # Reorder threshold priority for more efficient run on next frame
+        if left_thresh is not None and right_thresh is not None:
+            threshold_types.remove(left_thresh)
+            threshold_types.insert(0, left_thresh)
+            threshold_types.remove(right_thresh)
+            threshold_types.insert(0, right_thresh)
+            return results
 
     return results
 
