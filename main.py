@@ -86,7 +86,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--merge', help='number of images to merge', 
                         type=int, default=1, metavar='')
     args = parser.parse_args()
-    num_merged_images = args.m
+    num_merged_images = args.merge
 
     # Run
     main()
