@@ -43,7 +43,7 @@ class Polyfitter:
         leftx_base = np.argmax(histogram[:midpoint])
         rightx_base = np.argmax(histogram[midpoint:]) + midpoint
 
-        nwindows = 9
+        nwindows = 15
         window_height = np.int(img.shape[0] / nwindows)
         nonzero = img.nonzero()
         nonzeroy = np.array(nonzero[0])

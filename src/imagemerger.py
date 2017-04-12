@@ -25,13 +25,16 @@ class ImageMerger(object):
 
         """
 
+        if num_imgs_to_merge <= 1:
+            return image
+
         # Add image to buffer and increase counter
         self.add_to_buffer(image)
         self.image_counter += 1
 
         # Return first image if there is only one in buffer
         if len(self.image_buffer) == 1:
-            return self.image_buffer[0]
+            return image
 
         elif len(self.image_buffer) == 2:
             # Else merge the two images in buffer together

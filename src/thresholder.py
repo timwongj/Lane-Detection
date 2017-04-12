@@ -94,7 +94,7 @@ class Thresholder:
         mag = self.mag_thresh(img)
         color = self.color_thresh(img, y_min, w_min)
 
-        combined = np.zeros_like(direc)
+        combined = np.zeros_like(direc, dtype=np.uint8)
         combined[((color > 0) & ((mag > 0) | (direc > 0)))] = 255
 
         return combined
@@ -171,7 +171,7 @@ class Thresholder:
         scaled = np.uint8(255 * abs_sobel / np.max(abs_sobel))
 
         grad_binary = np.zeros_like(scaled)
-        grad_binary[(scaled >= thresh[0]) & (scaled <= thresh[1])] = 1
+        grad_binary[(scaled >= thresh[0]) & (scaled <= thresh[1])] = 255
         return grad_binary
 
     @staticmethod
@@ -187,7 +187,7 @@ class Thresholder:
         v_channel = hsv[:, :, 2]
 
         binary_output = np.zeros_like(v_channel)
-        binary_output[(v_channel > thresh[0]) & (v_channel <= thresh[1])] = 1
+        binary_output[(v_channel > thresh[0]) & (v_channel <= thresh[1])] = 255
 
         return binary_output
 
@@ -204,7 +204,7 @@ class Thresholder:
         s_channel = hls[:, :, 2]
 
         binary_output = np.zeros_like(s_channel)
-        binary_output[(s_channel > thresh[0]) & (s_channel <= thresh[1])] = 1
+        binary_output[(s_channel > thresh[0]) & (s_channel <= thresh[1])] = 255
 
         return binary_output
 
@@ -237,38 +237,20 @@ class Thresholder:
         elif threshold_type == ThresholdTypes.OTSU_GAUSS:
             return self.otsu_thresh_gaussian(img)
         elif threshold_type == ThresholdTypes.ABS_SOB_X:
-            threshold = self.abs_sobel_thresh(img, orient='x', sobel_kernel=3,
+            return self.abs_sobel_thresh(img, orient='x', sobel_kernel=3,
                                               thresh=(50, 80))
-            binary_output = np.zeros_like(threshold)
-            binary_output[threshold == 1] = 255
-            return binary_output
         elif threshold_type == ThresholdTypes.ABS_SOB_Y:
-            threshold = self.abs_sobel_thresh(img, orient='y', sobel_kernel=3,
+            return self.abs_sobel_thresh(img, orient='y', sobel_kernel=3,
                                               thresh=(50, 80))
-            binary_output = np.zeros_like(threshold)
-            binary_output[threshold == 1] = 255
-            return binary_output
         elif threshold_type == ThresholdTypes.ABS_SOB_X_TOL:
-            threshold = self.abs_sobel_thresh(img, orient='x', sobel_kernel=15,
+            return self.abs_sobel_thresh(img, orient='x', sobel_kernel=15,
                                               thresh=(30, 120))
-            binary_output = np.zeros_like(threshold)
-            binary_output[threshold == 1] = 255
-            return binary_output
         elif threshold_type == ThresholdTypes.ABS_SOB_Y_TOL:
-            threshold = self.abs_sobel_thresh(img, orient='x', sobel_kernel=15,
+            return self.abs_sobel_thresh(img, orient='x', sobel_kernel=15,
                                               thresh=(30, 120))
-            binary_output = np.zeros_like(threshold)
-            binary_output[threshold == 1] = 255
-            return binary_output
         elif threshold_type == ThresholdTypes.HLS:
-            threshold = self.hls_thresh(img, thresh=(100, 255))
-            binary_output = np.zeros_like(threshold)
-            binary_output[threshold == 1] = 255
-            return binary_output
+            return self.hls_thresh(img, thresh=(100, 255))
         elif threshold_type == ThresholdTypes.HSV:
-            threshold = self.hsv_thresh(img, thresh=(50, 255))
-            binary_output = np.zeros_like(threshold)
-            binary_output[threshold == 1] = 255
-            return binary_output
+            return self.hsv_thresh(img, thresh=(50, 255))
         else:
             return self.combined(img, THRESH_YELLOW_MIN, THRESH_WHITE_MIN)

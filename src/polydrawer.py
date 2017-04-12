@@ -2,6 +2,7 @@ import copy
 import cv2
 import numpy as np
 from scipy import misc
+from src.thresholdtypes import ThresholdTypes
 
 
 class Polydrawer:
@@ -107,8 +108,8 @@ class Polydrawer:
             res.right_conf * 100), (10, 150), cv2.FONT_HERSHEY_SIMPLEX,
                     1, color=127, thickness=2)
 
-        misc.imsave('output_images/advanced_lane_detection_confidence.jpg',
-                    img_confidence)
+        misc.imsave('output_images/confidence_{}.jpg'.format(
+            ThresholdTypes(res.left_thresh).name), img_confidence)
 
     @staticmethod
     def draw_conf_bounds(fit, conf_margin, img):

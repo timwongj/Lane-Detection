@@ -9,8 +9,9 @@ from src.thresholdtypes import ThresholdTypes
 camera = 'default'
 # camera = 'UM'
 # camera = 'blackfly'
+# camera = 'blackfly_reduced'
 
-advancedLaneDetector = AdvancedLaneDetector()
+advancedLaneDetector = AdvancedLaneDetector(camera)
 undistorter = Undistorter(camera)
 postprocessor = Postprocessor()
 threshold_types = list(map(int, ThresholdTypes))
@@ -20,10 +21,11 @@ def main():
     video = 'data/project_video'
     # video = 'data/UM'
     # video = 'data/sample14'
+    # video = 'data/sample14_reduced'
     white_output = '{}_done.mp4'.format(video)
     clip1 = VideoFileClip('{}.mp4'.format(video))
     clip1 = clip1.subclip(0, 0.025)
-    white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
+    white_clip = clip1.fl_image(process_image)
     white_clip.write_videofile(white_output, audio=False)
 
 
@@ -49,7 +51,8 @@ def run_lane_detection_algs(undistorted_img):
     right_thresh = None
 
     # Define number of images to be merged
-    num_merged_images = [1, 10]
+    # num_merged_images = [1, 10]
+    num_merged_images = [1]
 
     results = []
     for num_merged in num_merged_images:
@@ -71,6 +74,8 @@ def run_lane_detection_algs(undistorted_img):
                 threshold_types.remove(right_thresh)
                 threshold_types.insert(0, right_thresh)
                 return results
+
+    return results
 
 
 if __name__ == '__main__':

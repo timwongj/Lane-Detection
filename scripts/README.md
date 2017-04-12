@@ -33,6 +33,21 @@ Example:
 python convert_fps.py ~/Desktop/video.mp4 10
 ```
 
+## reduce_blackfly_video.py
+
+- crops top and bottom to reduce area of interest
+- scales down resolution by 50%
+
+Usage:
+```
+python reduce_blackfly_video.py [path]
+```
+
+Example:
+```
+python reduce_blackfly_video.py ~/Desktop/video.mp4
+```
+
 ## imagemerger_test.py
 
 - quick script to test ImageMerger class

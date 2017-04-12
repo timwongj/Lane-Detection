@@ -19,12 +19,8 @@ class Postprocessor:
         # Draw lines onto original image
         img = polydrawer.draw_lane(img, final_res)
 
-        # Measure curvature and car position
-        lane_curve, car_pos = polyfitter.measure_curvature(
-            img, final_res.left_fit, final_res.right_fit)
-
         # Write information on image
-        self.write_information(img, car_pos, lane_curve, final_res)
+        self.write_information(img, final_res)
 
         return img
 
@@ -58,7 +54,7 @@ class Postprocessor:
         return final_res
 
     @staticmethod
-    def write_information(img, car_pos, lane_curve, res):
+    def write_information(img, res):
         """
         Writes car position, lane curvature, and confidences on image
         :param img: 
@@ -68,42 +64,25 @@ class Postprocessor:
         :return: 
         """
 
-        # Format text
-        if car_pos is None:
-            car_pos_text = 'N/A'
-        elif car_pos > 0:
-            car_pos_text = '{}m right of center'.format(car_pos)
-        else:
-            car_pos_text = '{}m left of center'.format(abs(car_pos))
-
-        if lane_curve is None:
-            lane_curve_text = 'N/A'
-        else:
-            lane_curve_text = '{}m'.format(lane_curve.round())
-
         # Define text attributes
         text_color = (255, 0, 0)
         text_font = cv2.FONT_HERSHEY_SIMPLEX
         text_thickness = 2
 
         # Write text
-        cv2.putText(img, "Lane curve: {}".format(lane_curve_text), (10, 50),
-                    text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Car is {}".format(car_pos_text), (10, 100),
-                    text_font, 1,  text_color, text_thickness)
         cv2.putText(img, "Confidence: {:.2f}%".format(res.conf * 100), 
-                    (10, 150), text_font, 1, text_color, text_thickness)
+                    (10, 50), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Left conf: {:.2f}%".format(res.left_conf * 100),
-                    (10, 200), text_font, 1, text_color, text_thickness)
+                    (10, 100), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Right conf: {:.2f}%".format(res.right_conf * 100),
-                    (10, 250), text_font, 1, text_color, text_thickness)
+                    (10, 150), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Left Thresh: {}".format(
             ThresholdTypes(res.left_thresh).name),
-                    (10, 300), text_font, 1, text_color, text_thickness)
+                    (10, 200), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Right Thresh: {}".format(
             ThresholdTypes(res.right_thresh).name),
-                    (10, 350), text_font, 1, text_color, text_thickness)
+                    (10, 250), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Left Images Merged: {}".format(res.num_merged_left),
-                    (10, 400), text_font, 1, text_color, text_thickness)
+                    (10, 300), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Right Images Merged: {}".format(res.num_merged_right),
-                    (10, 450), text_font, 1, text_color, text_thickness)
+                    (10, 350), text_font, 1, text_color, text_thickness)
