@@ -10,9 +10,9 @@ from src.warper import Warper
 from src.imagemerger import ImageMerger
 
 thresholder = Thresholder()
-polyfitter  = Polyfitter()
-polydrawer  = Polydrawer()
-confidence  = Confidence()
+polyfitter = Polyfitter()
+polydrawer = Polydrawer()
+confidence = Confidence()
 imagemerger = ImageMerger()
 
 
@@ -63,4 +63,4 @@ class AdvancedLaneDetector:
             warped, self.res.left_fit, self.res.right_fit, conf_margin)
         polydrawer.draw_warped_confidence(warped, self.res, conf_margin)
 
-        return self.res
+        return copy.deepcopy(self.res)

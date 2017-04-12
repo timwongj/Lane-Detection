@@ -100,49 +100,32 @@ class Thresholder:
         return combined
 
     @staticmethod
-    def adaptive_mean_thresh(img):
+    def adaptive_thresh(img, type):
         """
-        Performs adaptive mean threshold filtering
+        Performs adaptive threshold filtering
         :param img:
+        :param type:
         :return:
         """
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        return cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
-                                     cv2.THRESH_BINARY, 11, 2)
+        adaptive_thresh = cv2.adaptiveThreshold(
+            gray, 255, type, cv2.THRESH_BINARY, 11, 5)
+        inv_adaptive_thresh = np.zeros_like(adaptive_thresh)
+        inv_adaptive_thresh[adaptive_thresh == 0] = 255
+        return inv_adaptive_thresh
 
     @staticmethod
-    def adaptive_gaussian_thresh(img):
-        """
-        Performs adaptive gaussian threshold filtering
-        :param img:
-        :return:
-        """
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        return cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                     cv2.THRESH_BINARY, 11, 2)
-
-    @staticmethod
-    def otsu_thresh(img):
+    def otsu_thresh(img, gaussian):
         """
         Performs otsu threshold filtering
         :param img:
+        :param gaussian:
         :return:
         """
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        if gaussian:
+            gray = cv2.GaussianBlur(gray, (5, 5), 0)
         ret, otsu = cv2.threshold(gray, 0, 255,
-                                  cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return otsu
-
-    @staticmethod
-    def otsu_thresh_gaussian(img):
-        """
-        Performs otsu threshold filtering with gaussian blur
-        :param img:
-        :return:
-        """
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (5, 5), 0)
-        ret, otsu = cv2.threshold(blur, 0, 255,
                                   cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         return otsu
 
@@ -222,9 +205,9 @@ class Thresholder:
             return self.color_thresh(img, THRESH_YELLOW_MIN_TOL,
                                      THRESH_WHITE_MIN_TOL)
         elif threshold_type == ThresholdTypes.ADAPT_MEAN:
-            return self.adaptive_mean_thresh(img)
+            return self.adaptive_thresh(img, cv2.ADAPTIVE_THRESH_MEAN_C)
         elif threshold_type == ThresholdTypes.ADAPT_GAUSS:
-            return self.adaptive_gaussian_thresh(img)
+            return self.adaptive_thresh(img, cv2.ADAPTIVE_THRESH_GAUSSIAN_C)
         elif threshold_type == ThresholdTypes.MAG:
             return self.mag_thresh(img)
         elif threshold_type == ThresholdTypes.COMBINED:
@@ -233,9 +216,9 @@ class Thresholder:
             return self.combined(img, THRESH_YELLOW_MIN_TOL,
                                  THRESH_WHITE_MIN_TOL)
         elif threshold_type == ThresholdTypes.OTSU:
-            return self.otsu_thresh(img)
+            return self.otsu_thresh(img, False)
         elif threshold_type == ThresholdTypes.OTSU_GAUSS:
-            return self.otsu_thresh_gaussian(img)
+            return self.otsu_thresh(img, True)
         elif threshold_type == ThresholdTypes.ABS_SOB_X:
             return self.abs_sobel_thresh(img, orient='x', sobel_kernel=3,
                                               thresh=(50, 80))
