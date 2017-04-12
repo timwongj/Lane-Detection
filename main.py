@@ -1,3 +1,4 @@
+import argparse
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
 from src.advancedLaneDetector import AdvancedLaneDetector
@@ -37,7 +38,7 @@ def process_image(img):
     misc.imsave('output_images/undistorted.jpg', undistorted_img)
 
     # Image Merging
-    merged_img = imagemerger.merge(undistorted_img, 10)
+    merged_img = imagemerger.merge(undistorted_img, num_merged_images)
     misc.imsave('output_images/merged.jpg', merged_img)
 
     # Run Lane Detection Algorithms
@@ -80,4 +81,12 @@ def run_lane_detection_algs(undistorted_img):
 
 
 if __name__ == '__main__':
+    # Parse input arguments if given
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--merge', help='number of images to merge', 
+                        type=int, default=1, metavar='')
+    args = parser.parse_args()
+    num_merged_images = args.m
+
+    # Run
     main()
