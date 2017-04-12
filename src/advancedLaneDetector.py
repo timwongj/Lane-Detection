@@ -36,13 +36,11 @@ class AdvancedLaneDetector:
         img = thresholder.threshold(undistorted_img, threshold_type)
 
         # Warping Transformation
-        self.warper.plot_trapezoid_before_warp(img)
         before_warp = self.warper.plot_trapezoid_before_warp(img)
         misc.imsave('output_images/threshold_{}.jpg'.format(
             ThresholdTypes(threshold_type).name), before_warp)
         img = self.warper.warp(img, self.res)
         warped = copy.deepcopy(img)
-        self.warper.plot_rectangle_after_warp(img)
         self.res.left_warp_Minv = self.warper.Minv
         self.res.right_warp_Minv = self.warper.Minv
         self.res.warp_src = self.warper.src

@@ -36,42 +36,39 @@ class Warper:
         """
 
         # Get src trapezoid shape from lane lines if not first frame
-        # if self.warp_counter is not 0:
-        #     # Get lane line points
-        #     left_lane, right_lane = res.calculate_lane_pts(img)
-        #
-        #     if left_lane is not None and right_lane is not None:
-        #         # Create 4 src points
-        #         p1 = left_lane[-1]
-        #         p2 = left_lane[0]
-        #         p3 = right_lane[0]
-        #         p4 = right_lane[-1]
-        #
-        #         src = [p1, p2, p3, p4]
-        #         self.src = np.array(src)
-        #
-        #     else:
-        #         self.src = self.default_src
-        #
-        # # Create default src values
-        # else:
-        #     try:
-        #         src = transformations[self.camera]['src']
-        #     except:
-        #         x1 = int(0.2 * img.shape[1])
-        #         x2 = int(0.35 * img.shape[1])
-        #         x3 = int(0.65 * img.shape[1])
-        #         x4 = int(0.9 * img.shape[1])
-        #         y1 = int(0.9 * img.shape[0])
-        #         y2 = int(0.7 * img.shape[0])
-        #
-        #         src = [[x1,y1], [x2,y2], [x3,y2], [x4,y1]]
-        #
-        #     self.src = np.array(src)
-        #     self.default_src = self.src
-
-        self.default_src = np.array(transformations[self.camera]['src'])
-        self.src = self.default_src
+        if self.warp_counter is not 0:
+            # Get lane line points
+            left_lane, right_lane = res.calculate_lane_pts(img)
+        
+            if left_lane is not None and right_lane is not None:
+                # Create 4 src points
+                p1 = left_lane[-1]
+                p2 = left_lane[0]
+                p3 = right_lane[0]
+                p4 = right_lane[-1]
+        
+                src = [p1, p2, p3, p4]
+                self.src = np.array(src)
+        
+            else:
+                self.src = self.default_src
+        
+        # Create default src values
+        else:
+            try:
+                src = transformations[self.camera]['src']
+            except:
+                x1 = int(0.2 * img.shape[1])
+                x2 = int(0.35 * img.shape[1])
+                x3 = int(0.65 * img.shape[1])
+                x4 = int(0.9 * img.shape[1])
+                y1 = int(0.9 * img.shape[0])
+                y2 = int(0.7 * img.shape[0])
+        
+                src = [[x1,y1], [x2,y2], [x3,y2], [x4,y1]]
+        
+            self.src = np.array(src)
+            self.default_src = self.src
 
         # Calculate dst points
         x1 = int(0.2 * img.shape[1]) # 20%
