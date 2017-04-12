@@ -14,6 +14,11 @@ class Polydrawer:
         :return:
         """
 
+        # if res.left_alg is 'Simple':
+        #     return self.draw_line(img, res)
+
+
+
         # Initialize lane overlay images
         lane_overlay = np.zeros_like(img)
 
@@ -45,6 +50,22 @@ class Polydrawer:
         img = cv2.addWeighted(img, 1, right_lane_overlay, 1, 0)
 
         return img
+
+    # def draw_line(self, img, res):
+    #
+    #     # draw lines
+    #     cv2.line(img,
+    #              (res.left_line[0], res.left_line[1]),
+    #              (res.left_line[2], res.left_line[3]),
+    #              (255, 255, 255), 5)
+    #     # cv2.line(img,
+    #     #          (res.right_line[0], res.right_line[1]),
+    #     #          (res.right_line[2], res.right_line[3]),
+    #     #          (255, 255, 255), 5)
+    #
+    #     misc.imsave('output_images/ld_line_out.jpg', img)
+    #
+    #     return img
 
     def draw_lane_curve(self, img, fit, conf, warp_Minv):
         """

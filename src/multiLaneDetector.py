@@ -20,8 +20,6 @@ laneFormatter = AdvancedLaneDetector()
 
 class MultiLaneDetector:
     def __init__(self):
-        self.left_line = None
-        self.right_line = None
         self.left_fit = []
         self.right_fit = []
         self.leftx = []
@@ -39,7 +37,7 @@ class MultiLaneDetector:
         :param camera: string
         :return: AlgoResult object
         """
-
+        res = AlgoResult('Simple')
 
         grayNorm = cv2.cvtColor(undistorted_img,cv2.COLOR_BGR2GRAY)
         misc.imsave('output_images/ld_grey.jpg', grayNorm)
@@ -66,8 +64,8 @@ class MultiLaneDetector:
 
         maxLeftSlope = 0
         maxRightSlope = 0
-        self.left_line = []
-        self.right_line = []
+        res.left_line = []
+        res.right_line = []
 
         # calculate slope for every line
         for line in lines:
@@ -76,27 +74,37 @@ class MultiLaneDetector:
             rightSlope = self.slope(x2, x1, y2, y1)
 
             # max positive slope
-            if leftSlope > maxLeftSlope and undistorted_img.size / 2 > y1:
+            if leftSlope > maxLeftSlope:  #and undistorted_img.shape[0] / 2 > y1:
                 maxLeftSlope = leftSlope
-                self.left_line = [x1, y1, x2,y2]
+                res.left_line = [x1, y1, x2,y2]
 
             # max negative slope
-            if rightSlope > maxRightSlope and undistorted_img.size / 2 > y1:
+            if rightSlope > maxRightSlope:  #and undistorted_img.shape[0] / 2 > y1:
                 maxRightSlope = rightSlope
-                self.right_line = [x1, y1, x2, y2]
+                res.right_line = [x1, y1, x2, y2]
 
         # draw lines
         blank_image = np.zeros((invert.shape[0], invert.shape[1], 3), np.uint8)
         blank_image[:, :] = (0, 0, 0)
         cv2.line(blank_image,
-                 (self.left_line[0], self.left_line[1]),
-                 (self.left_line[2], self.left_line[3]),
+                 (res.left_line[0], res.left_line[1]),
+                 (res.left_line[2], res.left_line[3]),
                  (255, 255, 255), 5)
         cv2.line(blank_image,
-                 (self.right_line[0], self.right_line[1]),
-                 (self.right_line[2], self.right_line[3]),
+                 (res.right_line[0], res.right_line[1]),
+                 (res.right_line[2], res.right_line[3]),
                  (255, 255, 255), 5)
+        cv2.line(undistorted_img,
+                 (res.left_line[0], res.left_line[1]),
+                 (res.left_line[2], res.left_line[3]),
+                 (0, 255, 0), 5)
+        cv2.line(undistorted_img,
+                 (res.right_line[0], res.right_line[1]),
+                 (res.right_line[2], res.right_line[3]),
+                 (0, 255, 0), 5)
         misc.imsave('output_images/ld_out.jpg', blank_image)
+        misc.imsave('output_images/ld_line_ud.jpg', undistorted_img)
+
 
         # warp image
         warper = Warper(camera)
@@ -125,22 +133,24 @@ class MultiLaneDetector:
         # left_x, left_y = nonzero[1] < warped_lines.shape[1], nonzero[0]
         # right_x, right_y = nonzero[1] >= warped_lines.shape[1], nonzero[0]
 
-        self.left_fit = np.polyfit(left_y, left_x, 1) if len(
+        res.left_warp_Minv = warper.Minv
+        res.right_warp_Minv = warper.Minv
+        res.left_fit = np.polyfit(left_y, left_x, 2) if len(
             left_y) > 0 else None
-        self.right_fit = np.polyfit(right_y, right_x, 1) if len(
+        res.right_fit = np.polyfit(right_y, right_x, 2) if len(
             right_y) > 0 else None
         polyfitter.plot_histogram(warped_lines)
 
 
         # compute confidence
-        res = AlgoResult('Line Detection')
+
         conf_margin = warped_lines.shape[1] / 25
         res.conf, res.left_conf, res.right_conf = confidence.compute_confidence(
-            warped_lines, self.left_fit, self.right_fit, conf_margin
+            warped_lines, res.left_fit, res.right_fit, conf_margin
         )
 
-        # Initialize Result
-        res = AlgoResult('Line Detection')
+        polydrawer.draw_warped_confidence(warped_lines, res, conf_margin)
+
         return res
 
     @staticmethod

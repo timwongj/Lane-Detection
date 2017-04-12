@@ -16,8 +16,8 @@ class Postprocessor:
         # Select left and right lanes from algorithms
         final_res = self.select_result(results)
 
-        # Draw lines onto original image
-        img = polydrawer.draw_lane(img, final_res)
+        # # Draw lines onto original image
+        # img = polydrawer.draw_lane(img, final_res)
 
         # Measure curvature and car position
         lane_curve, car_pos = polyfitter.measure_curvature(
@@ -93,9 +93,11 @@ class Postprocessor:
                     (10, 200), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Right conf: {:.2f}%".format(res.right_conf * 100),
                     (10, 250), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Left Thresh: {}".format(
-            ThresholdTypes(res.left_thresh).name),
+        if res.left_thresh is not None:
+            cv2.putText(img, "Left Thresh: {}".format(
+                ThresholdTypes(res.left_thresh).name),
                     (10, 300), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Right Thresh: {}".format(
-            ThresholdTypes(res.right_thresh).name),
+        if res.right_thresh is not None:
+            cv2.putText(img, "Right Thresh: {}".format(
+                ThresholdTypes(res.right_thresh).name),
                     (10, 350), text_font, 1, text_color, text_thickness)
