@@ -26,7 +26,7 @@ class Warper:
         self.warp_counter = 0
         self.camera = camera
 
-    def calculate_warp_shape(self, img, res):     
+    def calculate_warp_shape(self, img, res, default):     
         """
         Calculates warp src and dst shapes.
 
@@ -34,9 +34,8 @@ class Warper:
         :param res : algoresults object holding previous frame lane results
 
         """
-
         # Get src trapezoid shape from lane lines if not first frame
-        if self.warp_counter is not 0:
+        if self.warp_counter is not 0 and default is not False:
             # Get lane line points
             left_lane, right_lane = res.calculate_lane_pts(img)
         
@@ -109,9 +108,9 @@ class Warper:
         self.src[0,1]   = self.src[0,1] - vert_amount  // 2
         self.src[3,1]   = self.src[3,1] - vert_amount  // 2
 
-    def warp(self, img, res):
+    def warp(self, img, res, default):
         # Get self.src and self.dst points
-        self.calculate_warp_shape(img, res)
+        self.calculate_warp_shape(img, res, default)
 
         # Get transform matrices
         self.M = cv2.getPerspectiveTransform(np.float32(self.src), np.float32(self.dst))
