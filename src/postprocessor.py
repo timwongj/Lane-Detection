@@ -76,13 +76,11 @@ class Postprocessor:
                     (10, 100), text_font, 1, text_color, text_thickness)
         cv2.putText(img, "Right conf: {:.2f}%".format(res.right_conf * 100),
                     (10, 150), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Left Thresh: {}".format(
-            ThresholdTypes(res.left_thresh).name),
+        if res.left_thresh is not None:
+            cv2.putText(img, "Left Thresh: {}".format(
+                ThresholdTypes(res.left_thresh).name),
                     (10, 200), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Right Thresh: {}".format(
-            ThresholdTypes(res.right_thresh).name),
+        if res.right_thresh is not None:
+            cv2.putText(img, "Right Thresh: {}".format(
+                ThresholdTypes(res.right_thresh).name),
                     (10, 250), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Left Images Merged: {}".format(res.num_merged_left),
-                    (10, 300), text_font, 1, text_color, text_thickness)
-        cv2.putText(img, "Right Images Merged: {}".format(res.num_merged_right),
-                    (10, 350), text_font, 1, text_color, text_thickness)
