@@ -16,7 +16,11 @@
     - Minor Obstructions, Shadows, No Lanes and Wide Lanes
 - Algorithm dynamically adjusts to adapt to road conditions
 
-#### Sample Videos
+Note: Our Advanced Lane Detection algorithm is based off of Mehdi Sqalli's code, found here: https://github.com/MehdiSv/AdvancedLineDetection
+
+#### Result Videos
 - [Original Data](https://www.youtube.com/watch?v=7PRZQynfI9o)
 - [3rd Party Data](https://www.youtube.com/watch?v=pG7q-iod67s)
 - [Our Data](https://www.youtube.com/watch?v=S-1uF8gE_pM)
+
+
